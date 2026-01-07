@@ -1,678 +1,554 @@
-                                        <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>CrewOps - Production Crew Management</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-          .fade-in { animation: fadeIn 0.3s ease-in; }
-          @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-          .tab-active { border-bottom: 3px solid #3B82F6; color: #3B82F6; }
-          .btn-primary { @apply bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition; }
-          .btn-secondary { @apply bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold transition; }
-          .input-field { @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500; }
-          .card { @apply bg-white rounded-lg shadow-lg p-6 mb-6; }
-          .status-green { @apply text-green-600 font-semibold; }
-          .status-yellow { @apply text-yellow-600 font-semibold; }
-          .status-red { @apply text-red-600 font-semibold; }
-          .integration-badge { @apply inline-block px-3 py-1 rounded-full text-xs font-semibold mr-2 mb-2; }
-        </style>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>CrewOps - Production Crew Management</title>
+      <script src="https://cdn.tailwindcss.com"></script>
+      <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+      <style>
+                * { margin: 0; padding: 0; box-sizing: border-box; }
+                body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; }
+                .nav-tab { @apply px-4 py-3 text-sm font-medium cursor-pointer transition-all border-b-2 border-transparent; }
+                .nav-tab.active { @apply border-blue-600 text-blue-600 bg-white; }
+                .nav-tab:hover { @apply text-gray-700; }
+                .card { @apply bg-white rounded-lg shadow-sm border border-gray-200; }
+                .btn-primary { @apply px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors; }
+                .btn-secondary { @apply px-4 py-2 bg-gray-200 text-gray-800 rounded-lg font-medium hover:bg-gray-300 transition-colors; }
+                .input-field { @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500; }
+                .modal { @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50; }
+                .modal-content { @apply bg-white rounded-lg shadow-lg p-6 w-full max-w-md; }
+                .status-badge { @apply inline-block px-3 py-1 rounded-full text-sm font-medium; }
+                .status-green { @apply bg-green-100 text-green-800; }
+                .status-yellow { @apply bg-yellow-100 text-yellow-800; }
+                .status-red { @apply bg-red-100 text-red-800; }
+            </style>
   </head>
-  <body class="bg-gray-100">
-    <div id="app" class="min-h-screen">
-        <!-- Navigation -->
-        <nav class="bg-blue-600 text-white shadow-lg">
-              <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-                      <div class="text-2xl font-bold">⚡ CrewOps</div>div>
-                      <div class="flex gap-4">
-                                <button onclick="switchTab('dashboard')" class="hover:bg-blue-700 px-4 py-2 rounded">Dashboard</button>button>
-                                <button onclick="switchTab('crew')" class="hover:bg-blue-700 px-4 py-2 rounded">Crew</button>button>
-                                <button onclick="switchTab('projects')" class="hover:bg-blue-700 px-4 py-2 rounded">Projects</button>button>
-                                <button onclick="switchTab('time-tracking')" class="hover:bg-blue-700 px-4 py-2 rounded">Time Tracking</button>button>
-                                <button onclick="switchTab('settings')" class="hover:bg-blue-700 px-4 py-2 rounded">⚙️ Integrations</button>button>
-                      </div>div>
-              </div>div>
-        </nav>nav>
-
-        <!-- Dashboard Tab -->
-        <div id="dashboard-tab" class="tab-content">
-              <div class="max-w-7xl mx-auto p-6">
-                      <h1 class="text-3xl font-bold mb-6">Dashboard</h1>h1>
-                      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                                <div class="card">
-                                            <div class="text-gray-600 text-sm">Total Projects</div>div>
-                                            <div id="total-projects" class="text-4xl font-bold text-blue-600">0</div>div>
+  <body class="bg-gray-50">
+        <div id="app" class="min-h-screen">
+                  <header class="bg-white border-b border-gray-200 shadow-sm">
+                                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+                                                  <div class="flex items-center gap-3">
+                                                                        <div class="text-3xl font-bold text-blue-600">⚡</div>div>
+                                                                        <h1 class="text-2xl font-bold text-gray-900">CrewOps</h1>h1>
+                                                                        <span class="text-gray-500 text-sm">Production Crew Management</span>span>
+                                                  </div>div>
                                 </div>div>
-                                <div class="card">
-                                            <div class="text-gray-600 text-sm">Total Crew</div>div>
-                                            <div id="total-crew" class="text-4xl font-bold text-green-600">0</div>div>
+                                <div class="flex border-t border-gray-200 bg-gray-50">
+                                                  <div class="max-w-7xl mx-auto px-4 flex w-full">
+                                                                        <button onclick="switchTab('dashboard')" class="nav-tab active" data-tab="dashboard">
+                                                                                                  <i class="fas fa-chart-line mr-2"></i>i>Dashboard
+                                                                        </button>button>
+                                                                        <button onclick="switchTab('crew')" class="nav-tab" data-tab="crew">
+                                                                                                  <i class="fas fa-users mr-2"></i>i>Crew Management
+                                                                        </button>button>
+                                                                        <button onclick="switchTab('projects')" class="nav-tab" data-tab="projects">
+                                                                                                  <i class="fas fa-briefcase mr-2"></i>i>Projects
+                                                                        </button>button>
+                                                                        <button onclick="switchTab('tracking')" class="nav-tab" data-tab="tracking">
+                                                                                                  <i class="fas fa-clock mr-2"></i>i>Time Tracking
+                                                                        </button>button>
+                                                                        <button onclick="switchTab('integrations')" class="nav-tab" data-tab="integrations">
+                                                                                                  <i class="fas fa-plug mr-2"></i>i>Integrations
+                                                                        </button>button>
+                                                  </div>div>
                                 </div>div>
-                                <div class="card">
-                                            <div class="text-gray-600 text-sm">Active Time Entries</div>div>
-                                            <div id="active-entries" class="text-4xl font-bold text-purple-600">0</div>div>
-                                </div>div>
-                                <div class="card">
-                                            <div class="text-gray-600 text-sm">At-Risk Projects</div>div>
-                                            <div id="at-risk-count" class="text-4xl font-bold text-red-600">0</div>div>
-                                </div>div>
-                      </div>div>
+                  </header>header>
 
-                      <div class="card">
-                                <h2 class="text-xl font-bold mb-4">Projects Status (Real-Time)</h2>h2>
-                                <div id="projects-status" class="space-y-4"></div>div>
-                      </div>div>
-              </div>div>
-        </div>div>
+                  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                                <div id="dashboard-tab" class="tab-content">
+                                                  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                                                                        <div class="card p-6">
+                                                                                                  <div class="flex items-center justify-between">
+                                                                                                                                <div>
+                                                                                                                                                                  <p class="text-sm text-gray-600 font-medium">Active Projects</p>p>
+                                                                                                                                                                  <p class="text-3xl font-bold text-gray-900 mt-1" id="kpi-projects">0</p>p>
+                                                                                                                                  </div>
+                                                                                                                                <i class="fas fa-briefcase text-3xl text-blue-200"></i>i>
+                                                                                                    </div>
+                                                                        </div>
+                                                                        <div class="card p-6">
+                                                                                                  <div class="flex items-center justify-between">
+                                                                                                                                <div>
+                                                                                                                                                                  <p class="text-sm text-gray-600 font-medium">Total Crew</p>p>
+                                                                                                                                                                  <p class="text-3xl font-bold text-gray-900 mt-1" id="kpi-crew">0</p>p>
+                                                                                                                                  </div>
+                                                                                                                                <i class="fas fa-users text-3xl text-green-200"></i>i>
+                                                                                                    </div>
+                                                                        </div>
+                                                                        <div class="card p-6">
+                                                                                                  <div class="flex items-center justify-between">
+                                                                                                                                <div>
+                                                                                                                                                                  <p class="text-sm text-gray-600 font-medium">Hours Logged</p>p>
+                                                                                                                                                                  <p class="text-3xl font-bold text-gray-900 mt-1" id="kpi-hours">0</p>p>
+                                                                                                                                  </div>
+                                                                                                                                <i class="fas fa-hourglass text-3xl text-yellow-200"></i>i>
+                                                                                                    </div>
+                                                                        </div>
+                                                                        <div class="card p-6">
+                                                                                                  <div class="flex items-center justify-between">
+                                                                                                                                <div>
+                                                                                                                                                                  <p class="text-sm text-gray-600 font-medium">Budget Used</p>p>
+                                                                                                                                                                  <p class="text-3xl font-bold text-gray-900 mt-1" id="kpi-budget">$0</p>p>
+                                                                                                                                  </div>
+                                                                                                                                <i class="fas fa-dollar-sign text-3xl text-purple-200"></i>i>
+                                                                                                    </div>
+                                                                        </div>
+                                                  </div>
+                                                  <div class="card p-6">
+                                                                        <h2 class="text-xl font-bold text-gray-900 mb-4">Recent Projects</h2>h2>
+                                                                        <div id="dashboard-projects" class="space-y-3">
+                                                                                                  <p class="text-gray-500">No projects yet. Create one to get started!</p>p>
+                                                                        </div>
+                                                  </div>
+                                </div>
 
-        <!-- Crew Tab -->
-        <div id="crew-tab" class="tab-content hidden">
-              <div class="max-w-7xl mx-auto p-6">
-                      <div class="flex justify-between items-center mb-6">
-                                <h1 class="text-3xl font-bold">Crew Management</h1>h1>
-                                <button onclick="showAddCrewModal()" class="btn-primary">+ Add Crew Member</button>button>
-                      </div>div>
-                      <div class="card">
-                                <div id="crew-list" class="space-y-3"></div>div>
-                      </div>div>
-              </div>div>
-        </div>div>
+                                <div id="crew-tab" class="tab-content hidden">
+                                                  <div class="flex justify-between items-center mb-6">
+                                                                        <h2 class="text-2xl font-bold text-gray-900">Crew Management</h2>h2>
+                                                                        <button onclick="openCrewModal()" class="btn-primary">
+                                                                                                  <i class="fas fa-plus mr-2"></i>i>Add Crew Member
+                                                                        </button>button>
+                                                  </div>
+                                                  <div id="crew-list" class="space-y-3">
+                                                                        <p class="text-gray-500">No crew members yet.</p>p>
+                                                  </div>
+                                </div>
 
-        <!-- Projects Tab -->
-        <div id="projects-tab" class="tab-content hidden">
-              <div class="max-w-7xl mx-auto p-6">
-                      <div class="flex justify-between items-center mb-6">
-                                <h1 class="text-3xl font-bold">Projects</h1>h1>
-                                <button onclick="showAddProjectModal()" class="btn-primary">+ New Project</button>button>
-                      </div>div>
-                      <div class="card">
-                                <div id="projects-list" class="space-y-4"></div>div>
-                      </div>div>
-              </div>div>
-        </div>div>
+                                <div id="projects-tab" class="tab-content hidden">
+                                                  <div class="flex justify-between items-center mb-6">
+                                                                        <h2 class="text-2xl font-bold text-gray-900">Projects</h2>h2>
+                                                                        <button onclick="openProjectModal()" class="btn-primary">
+                                                                                                  <i class="fas fa-plus mr-2"></i>i>New Project
+                                                                        </button>button>
+                                                  </div>
+                                                  <div id="projects-list" class="space-y-3">
+                                                                        <p class="text-gray-500">No projects yet.</p>p>
+                                                  </div>
+                                </div>
 
-        <!-- Time Tracking Tab -->
-        <div id="time-tracking-tab" class="tab-content hidden">
-              <div class="max-w-7xl mx-auto p-6">
-                      <div class="flex justify-between items-center mb-6">
-                                <h1 class="text-3xl font-bold">Real-Time Labor Tracking</h1>h1>
-                                <button onclick="showTimeEntryModal()" class="btn-primary">+ Log Hours</button>button>
-                      </div>div>
-                      <div class="card">
-                                <h2 class="text-lg font-bold mb-4">Active Time Entries</h2>h2>
-                                <div id="time-entries-list" class="space-y-3"></div>div>
-                      </div>div>
-              </div>div>
-        </div>div>
-
-        <!-- Settings/Integrations Tab -->
-        <div id="settings-tab" class="tab-content hidden">
-              <div class="max-w-7xl mx-auto p-6">
-                      <h1 class="text-3xl font-bold mb-6">Integration Settings</h1>h1>
-
-                      <div class="card">
-                                <h2 class="text-xl font-bold mb-4">Connected Platforms</h2>h2>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                                            <!-- Slack -->
-                                            <div class="border p-4 rounded-lg">
-                                                          <div class="flex items-center mb-3">
-                                                                          <span class="text-2xl mr-2">💬</span>span>
-                                                                          <h3 class="text-lg font-bold">Slack</h3>h3>
-                                                          </div>div>
-                                                          <p class="text-sm text-gray-600 mb-3">Get real-time alerts when projects go over budget or miss deadlines</p>p>
-                                                          <input type="text" id="slack-webhook" placeholder="Slack Webhook URL" class="input-field mb-2">
-                                                          <button onclick="testSlackIntegration()" class="btn-secondary w-full">Test Integration</button>button>
-                                            </div>div>
-
-                                            <!-- Basecamp -->
-                                            <div class="border p-4 rounded-lg">
-                                                          <div class="flex items-center mb-3">
-                                                                          <span class="text-2xl mr-2">📋</span>span>
-                                                                          <h3 class="text-lg font-bold">Basecamp</h3>h3>
-                                                          </div>div>
-                                                          <p class="text-sm text-gray-600 mb-3">Sync projects and team updates automatically</p>p>
-                                                          <input type="text" id="basecamp-token" placeholder="Basecamp API Token" class="input-field mb-2">
-                                                          <button onclick="testBasecampIntegration()" class="btn-secondary w-full">Test Integration</button>button>
-                                            </div>div>
-
-                                            <!-- Google Calendar -->
-                                            <div class="border p-4 rounded-lg">
-                                                          <div class="flex items-center mb-3">
-                                                                          <span class="text-2xl mr-2">📅</span>span>
-                                                                          <h3 class="text-lg font-bold">Google Calendar</h3>h3>
-                                                          </div>div>
-                                                          <p class="text-sm text-gray-600 mb-3">Auto-sync project deadlines and create calendar events</p>p>
-                                                          <input type="text" id="google-token" placeholder="Google API Token" class="input-field mb-2">
-                                                          <button onclick="testGoogleIntegration()" class="btn-secondary w-full">Test Integration</button>button>
-                                            </div>div>
-
-                                            <!-- LinkedIn -->
-                                            <div class="border p-4 rounded-lg">
-                                                          <div class="flex items-center mb-3">
-                                                                          <span class="text-2xl mr-2">👔</span>span>
-                                                                          <h3 class="text-lg font-bold">LinkedIn</h3>h3>
-                                                          </div>div>
-                                                          <p class="text-sm text-gray-600 mb-3">Auto-populate crew member profiles and network</p>p>
-                                                          <input type="text" id="linkedin-token" placeholder="LinkedIn API Token" class="input-field mb-2">
-                                                          <button onclick="testLinkedInIntegration()" class="btn-secondary w-full">Test Integration</button>button>
-                                            </div>div>
-                                </div>div>
-                      </div>div>
-
-                      <div class="card">
-                                <h2 class="text-xl font-bold mb-4">Notification Settings</h2>h2>
-                                <label class="flex items-center mb-3">
-                                            <input type="checkbox" id="notify-overbudget" checked class="mr-2"> Notify when project goes over budget
-                                </label>label>
-                                <label class="flex items-center mb-3">
-                                            <input type="checkbox" id="notify-deadline" checked class="mr-2"> Notify when project at risk of missing deadline
-                                </label>label>
-                                <label class="flex items-center mb-3">
-                                            <input type="checkbox" id="notify-slack" checked class="mr-2"> Send Slack notifications
-                                </label>label>
-                                <button onclick="saveIntegrationSettings()" class="btn-primary">Save Settings</button>button>
-                      </div>div>
-              </div>div>
-        </div>div>
-
-        <!-- Add Crew Modal -->
-        <div id="add-crew-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div class="bg-white rounded-lg p-8 w-96">
-                      <h2 class="text-2xl font-bold mb-4">Add Crew Member</h2>h2>
-                      <input type="text" id="crew-name" placeholder="Name" class="input-field mb-3">
-                      <select id="crew-role" class="input-field mb-3">
-                                <option>-- Select Role --</option>
-                              <option>DP</option>
-                              <option>Gaffer</option>
-                              <option>Producer</option>
-                              <option>PA</option>
-                              <option>Grip</option>
-                              <option>Sound Tech</option>
-                              <option>Camera Op</option>
-                      </select>select>
-                    <input type="number" id="crew-rate" placeholder="Hourly Rate ($)" class="input-field mb-3">
-                    <input type="text" id="crew-linkedin" placeholder="LinkedIn Profile URL" class="input-field mb-3">
-                    <textarea id="crew-skills" placeholder="Skills (comma separated)" class="input-field mb-4" rows="3"></textarea>
-                    <div class="flex gap-3">
-                            <button onclick="addCrewMember()" class="btn-primary flex-1">Add</button>button>
-                            <button onclick="closeModals()" class="btn-secondary flex-1">Cancel</button>button>
-                    </div>div>
-              </div>div>
-        </div>div>
-    
-      <!-- Add Project Modal -->
-      <div id="add-project-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div class="bg-white rounded-lg p-8 w-96">
-                <h2 class="text-2xl font-bold mb-4">New Project</h2>h2>
-                <input type="text" id="project-name" placeholder="Project Name" class="input-field mb-3">
-                <input type="date" id="project-date" class="input-field mb-3">
-                <input type="number" id="project-budget" placeholder="Budget ($)" class="input-field mb-3">
-                <input type="number" id="project-hours-estimate" placeholder="Estimated Total Hours" class="input-field mb-3">
-                <textarea id="project-desc" placeholder="Description" class="input-field mb-4" rows="3"></textarea>
-                <div class="flex gap-3">
-                        <button onclick="addProject()" class="btn-primary flex-1">Create</button>button>
-                        <button onclick="closeModals()" class="btn-secondary flex-1">Cancel</button>button>
-                </div>div>
-          </div>div>
-      </div>div>
-    
-      <!-- Time Entry Modal -->
-      <div id="time-entry-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div class="bg-white rounded-lg p-8 w-96">
-                <h2 class="text-2xl font-bold mb-4">Log Hours</h2>h2>
-                <select id="entry-project" class="input-field mb-3">
-                        <option>-- Select Project --</option>
-                </select>select>
-                <select id="entry-crew" class="input-field mb-3">
-                        <option>-- Select Crew Member --</option>
-                </select>select>
-                <input type="number" id="entry-hours" placeholder="Hours Worked" class="input-field mb-3" min="0.5" step="0.5">
-                <input type="date" id="entry-date" class="input-field mb-3">
-                <textarea id="entry-notes" placeholder="Work Notes" class="input-field mb-4" rows="2"></textarea>
-                <div class="flex gap-3">
-                        <button onclick="addTimeEntry()" class="btn-primary flex-1">Log Hours</button>button>
-                        <button onclick="closeModals()" class="btn-secondary flex-1">Cancel</button>button>
-                </div>div>
-          </div>div>
-      </div>div>
-    
+                                <div id="tracking-tab" class="tab-content hidden">
+                                                  <div class="flex justify-between items-center mb-6">
+                                                                        <h2 class="text-2xl font-bold text-gray-900">Time Tracking</h2>h2>
+                                                  </div>
+                                                  <div class="card p-6 mb-6">
+                                                                        <h3 class="text-lg font-bold text-gray-900 mb-4">New Time Entry</h3>h3>
+                                                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                                                                  <div>
+                                                                                                                                <label class="block text-sm font-medium text-gray-700 mb-2">Crew Member</label>label>
+                                                                                                                                <select id="time-crew" class="input-field">
+                                                                                                                                                                  <option>Select crew member...</option>
+                                                                                                                                  </select>select>
+                                                                                                    </div>
+                                                                                                <div>
+                                                                                                                            <label class="block text-sm font-medium text-gray-700 mb-2">Project</label>label>
+                                                                                                                            <select id="time-project" class="input-field">
+                                                                                                                                                            <option>Select project...</option>
+                                                                                                                              </select>select>
+                                                                                                  </div>
+                                                                                                <div>
+                                                                                                                            <label class="block text-sm font-medium text-gray-700 mb-2">Date</label>label>
+                                                                                                                            <input type="date" id="time-date" class="input-field">
+                                                                                                  </div>
+                                                                                                <div>
+                                                                                                                            <label class="block text-sm font-medium text-gray-700 mb-2">Hours</label>label>
+                                                                                                                            <input type="number" id="time-hours" class="input-field" placeholder="8" min="0.5" step="0.5">
+                                                                                                  </div>
+                                                                                                <div class="md:col-span-2">
+                                                                                                                            <label class="block text-sm font-medium text-gray-700 mb-2">Notes</label>label>
+                                                                                                                            <textarea id="time-notes" class="input-field" rows="2" placeholder="Optional notes..."></textarea>
+                                                                                                  </div>
+                                                                                                <div class="md:col-span-2">
+                                                                                                                            <button onclick="addTimeEntry()" class="btn-primary w-full">Log Time Entry</button>button>
+                                                                                                  </div>
+                                                                        </div>
+                                                  </div>
+                                                <div class="card p-6">
+                                                                    <h3 class="text-lg font-bold text-gray-900 mb-4">Time Entries</h3>h3>
+                                                                    <div id="time-entries" class="space-y-3">
+                                                                                            <p class="text-gray-500">No time entries yet.</p>p>
+                                                                    </div>
+                                                </div>
+                                </div>
+                  
+                              <div id="integrations-tab" class="tab-content hidden">
+                                              <h2 class="text-2xl font-bold text-gray-900 mb-6">Platform Integrations</h2>h2>
+                                              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                                  <div class="card p-6">
+                                                                                          <div class="flex items-center gap-3 mb-4">
+                                                                                                                      <i class="fab fa-slack text-2xl" style="color: #36c5f0;"></i>i>
+                                                                                                                      <h3 class="text-lg font-bold">Slack</h3>h3>
+                                                                                            </div>
+                                                                                          <p class="text-sm text-gray-600 mb-4">Receive budget and deadline alerts</p>p>
+                                                                                          <input type="text" id="slack-token" placeholder="Webhook URL" class="input-field text-sm mb-3">
+                                                                                          <div class="flex gap-2">
+                                                                                                                      <button onclick="saveIntegration('slack')" class="btn-primary flex-1 text-sm">Save</button>button>
+                                                                                                                      <button onclick="testIntegration('slack')" class="btn-secondary flex-1 text-sm">Test</button>button>
+                                                                                            </div>
+                                                                                          <div id="slack-status" class="text-xs text-gray-500 mt-3"></div>
+                                                                  </div>
+                                              
+                                                                  <div class="card p-6">
+                                                                                          <div class="flex items-center gap-3 mb-4">
+                                                                                                                      <i class="fas fa-diagram-project text-2xl" style="color: #6b7280;"></i>i>
+                                                                                                                      <h3 class="text-lg font-bold">Basecamp</h3>h3>
+                                                                                            </div>
+                                                                                          <p class="text-sm text-gray-600 mb-4">Sync projects with Basecamp</p>p>
+                                                                                          <input type="text" id="basecamp-token" placeholder="API Token" class="input-field text-sm mb-3">
+                                                                                          <div class="flex gap-2">
+                                                                                                                      <button onclick="saveIntegration('basecamp')" class="btn-primary flex-1 text-sm">Save</button>button>
+                                                                                                                      <button onclick="testIntegration('basecamp')" class="btn-secondary flex-1 text-sm">Test</button>button>
+                                                                                            </div>
+                                                                                          <div id="basecamp-status" class="text-xs text-gray-500 mt-3"></div>
+                                                                  </div>
+                                              
+                                                                  <div class="card p-6">
+                                                                                          <div class="flex items-center gap-3 mb-4">
+                                                                                                                      <i class="fas fa-calendar text-2xl" style="color: #ea4335;"></i>i>
+                                                                                                                      <h3 class="text-lg font-bold">Google Calendar</h3>h3>
+                                                                                            </div>
+                                                                                          <p class="text-sm text-gray-600 mb-4">Auto-sync deadlines</p>p>
+                                                                                          <input type="text" id="google-token" placeholder="API Token" class="input-field text-sm mb-3">
+                                                                                          <div class="flex gap-2">
+                                                                                                                      <button onclick="saveIntegration('google')" class="btn-primary flex-1 text-sm">Save</button>button>
+                                                                                                                      <button onclick="testIntegration('google')" class="btn-secondary flex-1 text-sm">Test</button>button>
+                                                                                            </div>
+                                                                                          <div id="google-status" class="text-xs text-gray-500 mt-3"></div>
+                                                                  </div>
+                                              
+                                                                  <div class="card p-6">
+                                                                                          <div class="flex items-center gap-3 mb-4">
+                                                                                                                      <i class="fab fa-linkedin text-2xl" style="color: #0a66c2;"></i>i>
+                                                                                                                      <h3 class="text-lg font-bold">LinkedIn</h3>h3>
+                                                                                            </div>
+                                                                                          <p class="text-sm text-gray-600 mb-4">Enrich crew profiles</p>p>
+                                                                                          <input type="text" id="linkedin-token" placeholder="API Token" class="input-field text-sm mb-3">
+                                                                                          <div class="flex gap-2">
+                                                                                                                      <button onclick="saveIntegration('linkedin')" class="btn-primary flex-1 text-sm">Save</button>button>
+                                                                                                                      <button onclick="testIntegration('linkedin')" class="btn-secondary flex-1 text-sm">Test</button>button>
+                                                                                            </div>
+                                                                                          <div id="linkedin-status" class="text-xs text-gray-500 mt-3"></div>
+                                                                  </div>
+                                              </div>
+                              </div>
+                  </main>main>
+        </div>
+  
+      <div id="crew-modal" class="modal hidden">
+              <div class="modal-content">
+                          <h2 class="text-xl font-bold text-gray-900 mb-4">Add Crew Member</h2>h2>
+                          <div class="space-y-3">
+                                          <input type="text" id="crew-name" placeholder="Full Name" class="input-field">
+                                          <select id="crew-role" class="input-field">
+                                                              <option>Select Role...</option>
+                                                              <option>Camera Operator</option>
+                                                              <option>Sound Engineer</option>
+                                                              <option>Grip</option>
+                                                              <option>Gaffer</option>
+                                                              <option>Production Assistant</option>
+                                                              <option>Art Director</option>
+                                          </select>select>
+                                          <input type="number" id="crew-rate" placeholder="Hourly Rate ($)" class="input-field">
+                                          <input type="text" id="crew-linkedin" placeholder="LinkedIn URL" class="input-field">
+                                          <input type="text" id="crew-skills" placeholder="Skills" class="input-field">
+                                          <div class="flex gap-2 pt-4">
+                                                              <button onclick="saveCrew()" class="btn-primary flex-1">Add</button>button>
+                                                              <button onclick="closeCrewModal()" class="btn-secondary flex-1">Cancel</button>button>
+                                          </div>
+                          </div>
+              </div>
+      </div>
+  
+      <div id="project-modal" class="modal hidden">
+              <div class="modal-content">
+                          <h2 class="text-xl font-bold text-gray-900 mb-4">Create Project</h2>h2>
+                          <div class="space-y-3">
+                                          <input type="text" id="project-name" placeholder="Project Name" class="input-field">
+                                          <textarea id="project-desc" placeholder="Description" class="input-field" rows="2"></textarea>
+                                          <input type="number" id="project-budget" placeholder="Budget ($)" class="input-field">
+                                          <input type="date" id="project-deadline" class="input-field">
+                                          <input type="number" id="project-hours" placeholder="Est. Hours" class="input-field">
+                                          <div class="flex gap-2 pt-4">
+                                                              <button onclick="saveProject()" class="btn-primary flex-1">Create</button>button>
+                                                              <button onclick="closeProjectModal()" class="btn-secondary flex-1">Cancel</button>button>
+                                          </div>
+                          </div>
+              </div>
+      </div>
+  
       <script>
-            // Data store with integrations
-            let data = {
-                    crew: [],
-                    projects: [],
-                    timeEntries: [],
-                    integrations: {
-                              slack: { webhook: '', enabled: false },
-                              basecamp: { token: '', enabled: false },
-                              google: { token: '', enabled: false },
-                              linkedin: { token: '', enabled: false }
-                    },
-                    notificationSettings: {
-                              notifyOverbudget: true,
-                              notifyDeadline: true,
-                              notifySlack: true
-                    }
-            };
+                let data = {crew: [], projects: [], timeEntries: [], integrations: {}};
 
-            // Load from localStorage
-            function loadData() {
-                    const saved = localStorage.getItem('crewops-data');
-                    if (saved) data = JSON.parse(saved);
-                    loadIntegrationSettings();
-            }
+                function loadData() {
+                              const saved = localStorage.getItem('crewops-data');
+                              if (saved) data = JSON.parse(saved);
+                              document.getElementById('time-date').valueAsDate = new Date();
+                }
 
-            // Save to localStorage
-            function saveData() {
-                    localStorage.setItem('crewops-data', JSON.stringify(data));
-                    renderAll();
-                    checkProjectHealth();
-            }
+                function saveData() {
+                              localStorage.setItem('crewops-data', JSON.stringify(data));
+                              updateDashboard();
+                }
 
-            // Tab switching
-            function switchTab(tab) {
-                    document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-                    document.getElementById(tab + '-tab').classList.remove('hidden');
-                    renderAll();
-            }
+                function switchTab(tabName) {
+                              document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+                              document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+                              document.getElementById(tabName + '-tab').classList.remove('hidden');
+                              document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+                              if (tabName === 'crew') updateCrewList();
+                              else if (tabName === 'projects') updateProjectsList();
+                              else if (tabName === 'tracking') updateTimeEntries();
+                }
 
-            // Modals
-            function showAddCrewModal() {
-                    document.getElementById('add-crew-modal').classList.remove('hidden');
-            }
-
-            function showAddProjectModal() {
-                    document.getElementById('add-project-modal').classList.remove('hidden');
-            }
-
-            function showTimeEntryModal() {
-                    populateTimeEntrySelects();
-                    document.getElementById('time-entry-modal').classList.remove('hidden');
-            }
-
-            function closeModals() {
-                    document.getElementById('add-crew-modal').classList.add('hidden');
-                    document.getElementById('add-project-modal').classList.add('hidden');
-                    document.getElementById('time-entry-modal').classList.add('hidden');
-            }
-
-            // Add crew member
-            function addCrewMember() {
-                    const name = document.getElementById('crew-name').value;
-                    const role = document.getElementById('crew-role').value;
-                    const rate = parseFloat(document.getElementById('crew-rate').value);
-                    const linkedin = document.getElementById('crew-linkedin').value;
-                    const skills = document.getElementById('crew-skills').value;
-
-                    if (name && role !== '-- Select Role --' && rate > 0) {
-                              data.crew.push({
-                                          id: Date.now(),
-                                          name,
-                                          role,
-                                          hourlyRate: rate,
-                                          linkedInProfile: linkedin,
-                                          skills: skills.split(',').map(s => s.trim()),
-                                          addedAt: new Date().toISOString()
-                              });
-                              saveData();
-                              closeModals();
+                function openCrewModal() { document.getElementById('crew-modal').classList.remove('hidden'); }
+                function closeCrewModal() {
+                              document.getElementById('crew-modal').classList.add('hidden');
                               document.getElementById('crew-name').value = '';
-                              document.getElementById('crew-role').value = '-- Select Role --';
+                              document.getElementById('crew-role').value = '';
                               document.getElementById('crew-rate').value = '';
                               document.getElementById('crew-linkedin').value = '';
                               document.getElementById('crew-skills').value = '';
-                    } else {
-                              alert('Please fill all required fields');
-                    }
-            }
+                }
 
-            // Add project
-            function addProject() {
-                    const name = document.getElementById('project-name').value;
-                    const date = document.getElementById('project-date').value;
-                    const budget = parseFloat(document.getElementById('project-budget').value);
-                    const hoursEstimate = parseFloat(document.getElementById('project-hours-estimate').value);
-                    const desc = document.getElementById('project-desc').value;
-
-                    if (name && date && budget > 0) {
-                              data.projects.push({
-                                          id: Date.now(),
-                                          name,
-                                          date,
-                                          budget,
-                                          estimatedHours: hoursEstimate || 0,
-                                          description: desc,
-                                          createdAt: new Date().toISOString(),
-                                          status: 'active'
-                              });
+                function saveCrew() {
+                              const crew = {
+                                                id: Date.now(),
+                                                name: document.getElementById('crew-name').value,
+                                                role: document.getElementById('crew-role').value,
+                                                rate: parseFloat(document.getElementById('crew-rate').value) || 0,
+                                                linkedin: document.getElementById('crew-linkedin').value,
+                                                skills: document.getElementById('crew-skills').value
+                              };
+                              if (!crew.name || !crew.role) { alert('Fill required fields'); return; }
+                              data.crew.push(crew);
                               saveData();
-                              closeModals();
+                              closeCrewModal();
+                              updateCrewList();
+                }
+
+                function updateCrewList() {
+                              const list = document.getElementById('crew-list');
+                              if (data.crew.length === 0) {
+                                                list.innerHTML = '<p class="text-gray-500">No crew members yet.</p>';
+                                                return;
+                              }
+                              list.innerHTML = data.crew.map(m => `
+                                              <div class="card p-4">
+                                                                  <div class="flex justify-between">
+                                                                                          <div>
+                                                                                                                      <h3 class="font-bold text-gray-900">${m.name}</h3>
+                                                                                                                                                  <p class="text-sm text-gray-600 mt-1"><i class="fas fa-briefcase w-4"></i> ${m.role}</p>
+                                                                                                                                                                              <p class="text-sm text-gray-600"><i class="fas fa-dollar-sign w-4"></i> $${m.rate}/hr</p>
+                                                                                                                                                                                                      </div>
+                                                                                                                                                                                                                              <button onclick="deleteCrew(${m.id})" class="text-red-600"><i class="fas fa-trash"></i></button>
+                                                                                                                                                                                                                                                  </div>
+                                                                                                                                                                                                                                                                  </div>
+                                                                                                                                                                                                                                                                              `).join('');
+                              updateSelectOptions();
+                }
+
+                function deleteCrew(id) {
+                              data.crew = data.crew.filter(c => c.id !== id);
+                              saveData();
+                              updateCrewList();
+                }
+
+                function openProjectModal() { document.getElementById('project-modal').classList.remove('hidden'); }
+                function closeProjectModal() {
+                              document.getElementById('project-modal').classList.add('hidden');
                               document.getElementById('project-name').value = '';
-                              document.getElementById('project-date').value = '';
-                              document.getElementById('project-budget').value = '';
-                              document.getElementById('project-hours-estimate').value = '';
                               document.getElementById('project-desc').value = '';
-                    } else {
-                              alert('Please fill all required fields');
-                    }
-            }
+                              document.getElementById('project-budget').value = '';
+                              document.getElementById('project-deadline').value = '';
+                              document.getElementById('project-hours').value = '';
+                }
 
-            // Add time entry
-            function addTimeEntry() {
-                    const projectId = document.getElementById('entry-project').value;
-                    const crewId = document.getElementById('entry-crew').value;
-                    const hours = parseFloat(document.getElementById('entry-hours').value);
-                    const date = document.getElementById('entry-date').value;
-                    const notes = document.getElementById('entry-notes').value;
-
-                    if (projectId && crewId && hours > 0 && date) {
-                              data.timeEntries.push({
-                                          id: Date.now(),
-                                          projectId: parseInt(projectId),
-                                          crewId: parseInt(crewId),
-                                          hours,
-                                          date,
-                                          notes,
-                                          loggedAt: new Date().toISOString()
-                              });
+                function saveProject() {
+                              const proj = {
+                                                id: Date.now(),
+                                                name: document.getElementById('project-name').value,
+                                                description: document.getElementById('project-desc').value,
+                                                budget: parseFloat(document.getElementById('project-budget').value) || 0,
+                                                deadline: document.getElementById('project-deadline').value,
+                                                estimatedHours: parseFloat(document.getElementById('project-hours').value) || 0,
+                                                status: 'active'
+                              };
+                              if (!proj.name) { alert('Enter project name'); return; }
+                              data.projects.push(proj);
                               saveData();
-                              closeModals();
-                              document.getElementById('entry-project').value = '';
-                              document.getElementById('entry-crew').value = '';
-                              document.getElementById('entry-hours').value = '';
-                              document.getElementById('entry-date').value = '';
-                              document.getElementById('entry-notes').value = '';
+                              closeProjectModal();
+                              updateProjectsList();
+                }
 
-                              // Send notifications
-                              checkProjectHealth();
-                    } else {
-                              alert('Please fill all required fields');
-                    }
-            }
+                function updateProjectsList() {
+                              const list = document.getElementById('projects-list');
+                              if (data.projects.length === 0) {
+                                                list.innerHTML = '<p class="text-gray-500">No projects yet.</p>';
+                                                return;
+                              }
+                              list.innerHTML = data.projects.map(p => {
+                                                const hoursUsed = data.timeEntries.filter(e => e.projectId === p.id).reduce((s, e) => s + e.hours, 0);
+                                                const budgetUsed = data.timeEntries.filter(e => e.projectId === p.id).reduce((s, e) => s + e.cost, 0);
+                                                const isAtRisk = new Date(p.deadline) < new Date() || budgetUsed > p.budget;
+                                                return `
+                                                                    <div class="card p-4">
+                                                                                            <div class="flex justify-between items-start mb-3">
+                                                                                                                        <div>
+                                                                                                                                                        <h3 class="font-bold text-gray-900">${p.name}</h3>
+                                                                                                                                                                                        <p class="text-sm text-gray-600">${p.description}</p>
+                                                                                                                                                                                                                    </div>
+                                                                                                                                                                                                                                                ${isAtRisk ? '<span class="status-badge status-red">⚠️ At Risk</span>' : '<span class="status-badge status-green">✓ On Track</span>'}
+                                                                                                                                                                                                                                                                        </div>
+                                                                                                                                                                                                                                                                                                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                                                                                                                                                                                                                                                                                                                            <div><p class="text-gray-500">Budget</p><p class="font-semibold">$${p.budget}</p></div>
+                                                                                                                                                                                                                                                                                                                                                        <div><p class="text-gray-500">Hours</p><p class="font-semibold">${hoursUsed}/${p.estimatedHours}</p></div>
+                                                                                                                                                                                                                                                                                                                                                                                    <div><p class="text-gray-500">Deadline</p><p class="font-semibold">${new Date(p.deadline).toLocaleDateString()}</p></div>
+                                                                                                                                                                                                                                                                                                                                                                                                                <div class="text-right"><button onclick="deleteProject(${p.id})" class="text-red-600"><i class="fas fa-trash"></i></button></div>
+                                                                                                                                                                                                                                                                                                                                                                                                                                        </div>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                            </div>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                            `;
+                              }).join('');
+                              updateSelectOptions();
+                }
 
-            // Populate time entry dropdowns
-            function populateTimeEntrySelects() {
-                    const projectSelect = document.getElementById('entry-project');
-                    const crewSelect = document.getElementById('entry-crew');
+                function deleteProject(id) {
+                              data.projects = data.projects.filter(p => p.id !== id);
+                              saveData();
+                              updateProjectsList();
+                }
 
-                    projectSelect.innerHTML = '<option>-- Select Project --</option>';
-                    crewSelect.innerHTML = '<option>-- Select Crew Member --</option>';
+                function addTimeEntry() {
+                              const crewId = document.getElementById('time-crew').value;
+                              const projectId = document.getElementById('time-project').value;
+                              const date = document.getElementById('time-date').value;
+                              const hours = parseFloat(document.getElementById('time-hours').value);
+                              const notes = document.getElementById('time-notes').value;
 
-                    data.projects.forEach(p => {
-                              projectSelect.innerHTML += `<option value="${p.id}">${p.name}</option>`;
-                    });
+                              if (!crewId || !projectId || !date || !hours) { alert('Fill all required fields'); return; }
 
-                    data.crew.forEach(c => {
-                              crewSelect.innerHTML += `<option value="${c.id}">${c.name}</option>`;
-                    });
-            }
+                              const crew = data.crew.find(c => c.id == crewId);
+                              const project = data.projects.find(p => p.id == projectId);
 
-            // Get project health status
-            function getProjectHealth(project) {
-                    const entries = data.timeEntries.filter(e => e.projectId === project.id);
-                    const totalHours = entries.reduce((sum, e) => sum + e.hours, 0);
-                    const totalCost = entries.reduce((sum, e) => {
-                              const crew = data.crew.find(c => c.id === e.crewId);
-                              return sum + (crew ? crew.hourlyRate * e.hours : 0);
-                    }, 0);
+                              const entry = {
+                                                id: Date.now(),
+                                                crewId: parseInt(crewId),
+                                                crewName: crew.name,
+                                                crewRate: crew.rate,
+                                                projectId: parseInt(projectId),
+                                                projectName: project.name,
+                                                date: date,
+                                                hours: hours,
+                                                cost: hours * crew.rate,
+                                                notes: notes
+                              };
 
-                    const daysRemaining = Math.ceil((new Date(project.date) - new Date()) / (1000 * 60 * 60 * 24));
-                    const hoursRemaining = Math.max(0, project.estimatedHours - totalHours);
-                    const budgetRemaining = project.budget - totalCost;
+                              data.timeEntries.push(entry);
+                              saveData();
+                              document.getElementById('time-crew').value = '';
+                              document.getElementById('time-project').value = '';
+                              document.getElementById('time-date').valueAsDate = new Date();
+                              document.getElementById('time-hours').value = '';
+                              document.getElementById('time-notes').value = '';
+                              updateTimeEntries();
+                }
 
-                    const isOverBudget = totalCost > project.budget;
-                    const atRiskDeadline = daysRemaining < 0 || (hoursRemaining > 0 && daysRemaining <= 3);
-                    const status = isOverBudget || atRiskDeadline ? 'at-risk' : 'on-track';
+                function updateTimeEntries() {
+                              const list = document.getElementById('time-entries');
+                              const crewSel = document.getElementById('time-crew');
+                              const projSel = document.getElementById('time-project');
 
-                    return { totalHours, totalCost, daysRemaining, hoursRemaining, budgetRemaining, isOverBudget, atRiskDeadline, status };
-            }
+                              crewSel.innerHTML = '<option>Select crew...</option>' + data.crew.map(c => `<option value="${c.id}">${c.name} ($${c.rate}/hr)</option>`).join('');
+                              projSel.innerHTML = '<option>Select project...</option>' + data.projects.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
 
-            // Check project health and send notifications
-            function checkProjectHealth() {
-                    const atRiskProjects = [];
-
-                    data.projects.forEach(project => {
-                              const health = getProjectHealth(project);
-
-                              if (health.isOverBudget && data.notificationSettings.notifyOverbudget) {
-                                          atRiskProjects.push(project);
-                                          if (data.notificationSettings.notifySlack) {
-                                                        sendSlackNotification(`⚠️ ${project.name} is OVER BUDGET by $${(health.totalCost - project.budget).toFixed(2)}`);
-                                          }
+                              if (data.timeEntries.length === 0) {
+                                                list.innerHTML = '<p class="text-gray-500">No time entries yet.</p>';
+                                                return;
                               }
 
-                              if (health.atRiskDeadline && data.notificationSettings.notifyDeadline) {
-                                          atRiskProjects.push(project);
-                                          if (data.notificationSettings.notifySlack) {
-                                                        sendSlackNotification(`⏰ ${project.name} is AT RISK of missing deadline (${health.daysRemaining} days left)`);
-                                          }
-                              }
-                    });
-
-                    return atRiskProjects;
-            }
-
-            // Render crew list
-            function renderCrewList() {
-                    const html = data.crew.map(member => `
-                            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                                      <div class="flex justify-between items-start">
-                                                  <div>
-                                                                <div class="font-semibold">${member.name}</div>
-                                                                              <div class="text-sm text-gray-600">${member.role} • $${member.hourlyRate}/hr</div>
-                                                                                            <div class="text-xs text-gray-500 mt-1">${member.skills.join(', ')}</div>
-                                                                                                          ${member.linkedInProfile ? `<a href="${member.linkedInProfile}" target="_blank" class="text-xs text-blue-500 hover:underline">View LinkedIn →</a>` : ''}
-                                                                                                                      </div>
-                                                                                                                                  <button onclick="deleteCrewMember(${member.id})" class="text-red-600 hover:text-red-800 font-semibold">Delete</button>
-                                                                                                                                            </div>
-                                                                                                                                                    </div>
-                                                                                                                                                          `).join('');
-                    document.getElementById('crew-list').innerHTML = html || '<p class="text-gray-500">No crew members yet</p>';
-            }
-
-            // Render projects
-            function renderProjectsList() {
-                    const html = data.projects.map(project => {
-                              const health = getProjectHealth(project);
-                              const statusColor = health.status === 'at-risk' ? 'border-red-300 bg-red-50' : 'border-green-300 bg-green-50';
-
-                              return `
-                                        <div class="border-2 ${statusColor} p-5 rounded-lg">
-                                                    <div class="flex justify-between items-start mb-3">
-                                                                  <div>
-                                                                                  <h3 class="text-lg font-bold">${project.name}</h3>
-                                                                                                  <p class="text-sm text-gray-600">${new Date(project.date).toLocaleDateString()}</p>
-                                                                                                                </div>
-                                                                                                                              <div class="text-right">
-                                                                                                                                              <div class="text-xs font-semibold ${health.status === 'at-risk' ? 'status-red' : 'status-green'}">
-                                                                                                                                                                ${health.status === 'at-risk' ? '🚨 AT RISK' : '✓ ON TRACK'}
-                                                                                                                                                                                </div>
-                                                                                                                                                                                                ${health.daysRemaining < 0 ? `<div class="text-xs text-red-600">OVERDUE</div>` : `<div class="text-xs text-gray-600">${health.daysRemaining} days left</div>`}
-                                                                                                                                                                                                              </div>
-                                                                                                                                                                                                                          </div>
-                                                                                                                                                                                                                                      
-                                                                                                                                                                                                                                                  <div class="grid grid-cols-4 gap-2 mb-3 text-xs">
-                                                                                                                                                                                                                                                                <div>
-                                                                                                                                                                                                                                                                                <div class="text-gray-600">Budget</div>
-                                                                                                                                                                                                                                                                                                <div class="font-semibold">$${project.budget.toFixed(0)}</div>
+                              list.innerHTML = data.timeEntries.sort((a, b) => new Date(b.date) - new Date(a.date)).map(e => `
+                                              <div class="card p-4">
+                                                                  <div class="flex justify-between items-start">
+                                                                                          <div class="flex-1">
+                                                                                                                      <p class="font-semibold text-gray-900">${e.crewName} - ${e.projectName}</p>
+                                                                                                                                                  <p class="text-sm text-gray-600">${new Date(e.date).toLocaleDateString()} • ${e.hours}hrs</p>
+                                                                                                                                                                              ${e.notes ? `<p class="text-sm text-gray-500 mt-1">${e.notes}</p>` : ''}
+                                                                                                                                                                                                      </div>
+                                                                                                                                                                                                                              <div class="text-right">
+                                                                                                                                                                                                                                                          <p class="font-semibold text-gray-900">$${e.cost.toFixed(2)}</p>
+                                                                                                                                                                                                                                                                                      <button onclick="deleteTimeEntry(${e.id})" class="text-red-600 text-sm">Delete</button>
                                                                                                                                                                                                                                                                                                               </div>
-                                                                                                                                                                                                                                                                                                                            <div>
-                                                                                                                                                                                                                                                                                                                                            <div class="text-gray-600">Spent</div>
-                                                                                                                                                                                                                                                                                                                                                            <div class="font-semibold ${health.isOverBudget ? 'text-red-600' : ''}">$${health.totalCost.toFixed(0)}</div>
-                                                                                                                                                                                                                                                                                                                                                                          </div>
-                                                                                                                                                                                                                                                                                                                                                                                        <div>
-                                                                                                                                                                                                                                                                                                                                                                                                        <div class="text-gray-600">Hours Used</div>
-                                                                                                                                                                                                                                                                                                                                                                                                                        <div class="font-semibold">${health.totalHours}/${project.estimatedHours || '?'}</div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                      </div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                    <div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <div class="text-gray-600">Burn Rate</div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <div class="font-semibold">${health.daysRemaining > 0 ? (health.hoursRemaining / health.daysRemaining).toFixed(1) : '∞'} hrs/day</div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  </div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              </div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          <div class="w-full bg-gray-300 rounded-full h-2 mb-3">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <div class="bg-blue-600 h-2 rounded-full" style="width: ${Math.min(100, (health.totalHours / project.estimatedHours) * 100)}%"></div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    </div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <button onclick="deleteProject(${project.id})" class="text-red-600 hover:text-red-800 text-sm">Delete Project</button>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          </div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  `;
-                    }).join('');
-                    document.getElementById('projects-list').innerHTML = html || '<p class="text-gray-500">No projects yet</p>';
-            }
+                                                                                                                                                                                                                                                                                                                                  </div>
+                                                                                                                                                                                                                                                                                                                                                  </div>
+                                                                                                                                                                                                                                                                                                                                                              `).join('');
+                }
 
-            // Render time entries
-            function renderTimeEntries() {
-                    const html = data.timeEntries.map(entry => {
-                              const project = data.projects.find(p => p.id === entry.projectId);
-                              const crew = data.crew.find(c => c.id === entry.crewId);
-                              const cost = crew ? crew.hourlyRate * entry.hours : 0;
+                function deleteTimeEntry(id) {
+                              data.timeEntries = data.timeEntries.filter(e => e.id !== id);
+                              saveData();
+                              updateTimeEntries();
+                }
 
-                              return `
-                                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                                                    <div class="flex justify-between items-start">
-                                                                  <div>
-                                                                                  <div class="font-semibold">${crew?.name || 'Unknown'} - ${project?.name || 'Unknown Project'}</div>
-                                                                                                  <div class="text-sm text-gray-600">${entry.hours} hours on ${new Date(entry.date).toLocaleDateString()}</div>
-                                                                                                                  <div class="text-xs text-gray-500 mt-1">Cost: $${cost.toFixed(2)}</div>
-                                                                                                                                  ${entry.notes ? `<div class="text-xs text-gray-500 italic mt-1">"${entry.notes}"</div>` : ''}
-                                                                                                                                                </div>
-                                                                                                                                                              <button onclick="deleteTimeEntry(${entry.id})" class="text-red-600 hover:text-red-800">Delete</button>
-                                                                                                                                                                          </div>
-                                                                                                                                                                                    </div>
-                                                                                                                                                                                            `;
-                    }).join('');
-                    document.getElementById('time-entries-list').innerHTML = html || '<p class="text-gray-500">No time entries yet</p>';
-            }
+                function updateDashboard() {
+                              document.getElementById('kpi-projects').textContent = data.projects.filter(p => p.status === 'active').length;
+                              document.getElementById('kpi-crew').textContent = data.crew.length;
+                              const totalHours = data.timeEntries.reduce((s, e) => s + e.hours, 0);
+                              document.getElementById('kpi-hours').textContent = totalHours.toFixed(1);
+                              const totalBudget = data.timeEntries.reduce((s, e) => s + e.cost, 0);
+                              document.getElementById('kpi-budget').textContent = '$' + totalBudget.toFixed(2);
 
-            // Render projects status on dashboard
-            function renderProjectsStatus() {
-                    const html = data.projects.map(project => {
-                              const health = getProjectHealth(project);
-                              const statusEmoji = health.status === 'at-risk' ? '🚨' : '✓';
+                              const dashProj = document.getElementById('dashboard-projects');
+                              const recent = data.projects.slice(-3).reverse();
+                              if (recent.length === 0) {
+                                                dashProj.innerHTML = '<p class="text-gray-500">No projects yet. Create one to get started!</p>';
+                              } else {
+                                                dashProj.innerHTML = recent.map(p => {
+                                                                      const hu = data.timeEntries.filter(e => e.projectId === p.id).reduce((s, e) => s + e.hours, 0);
+                                                                      const bu = data.timeEntries.filter(e => e.projectId === p.id).reduce((s, e) => s + e.cost, 0);
+                                                                      const atRisk = new Date(p.deadline) < new Date() || bu > p.budget;
+                                                                      return `
+                                                                                              <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
+                                                                                                                          <div>
+                                                                                                                                                          <p class="font-semibold text-gray-900">${p.name}</p>
+                                                                                                                                                                                          <p class="text-sm text-gray-600">${hu.toFixed(1)}hrs • $${bu.toFixed(2)}</p>
+                                                                                                                                                                                                                      </div>
+                                                                                                                                                                                                                                                  ${atRisk ? '<span class="text-red-600">⚠️ At Risk</span>' : '<span class="text-green-600">✓ On Track</span>'}
+                                                                                                                                                                                                                                                                          </div>
+                                                                                                                                                                                                                                                                                              `;
+                                                }).join('');
+                              }
+                }
 
-                              return `
-                                        <div class="p-3 bg-gray-50 rounded border-l-4 ${health.status === 'at-risk' ? 'border-red-500' : 'border-green-500'}">
-                                                    <div class="flex justify-between">
-                                                                  <div>
-                                                                                  <div class="font-semibold">${statusEmoji} ${project.name}</div>
-                                                                                                  <div class="text-xs text-gray-600">${health.hoursRemaining}h remaining • ${health.budgetRemaining >= 0 ? '$' + health.budgetRemaining.toFixed(0) : '-$' + Math.abs(health.budgetRemaining).toFixed(0)} budget left</div>
-                                                                                                                </div>
-                                                                                                                              <div class="text-right text-xs">
-                                                                                                                                              <div class="font-semibold">${health.daysRemaining} days</div>
-                                                                                                                                                            </div>
-                                                                                                                                                                        </div>
-                                                                                                                                                                                  </div>
-                                                                                                                                                                                          `;
-                    }).join('');
-                    document.getElementById('projects-status').innerHTML = html || '<p class="text-gray-500">No projects yet</p>';
-            }
+                function updateSelectOptions() {
+                              const c = document.getElementById('time-crew');
+                              const p = document.getElementById('time-project');
+                              if (c) c.innerHTML = '<option>Select crew...</option>' + data.crew.map(x => `<option value="${x.id}">${x.name}</option>`).join('');
+                              if (p) p.innerHTML = '<option>Select project...</option>' + data.projects.map(x => `<option value="${x.id}">${x.name}</option>`).join('');
+                }
 
-            // Update dashboard
-            function updateDashboard() {
-                    document.getElementById('total-projects').textContent = data.projects.length;
-                    document.getElementById('total-crew').textContent = data.crew.length;
-                    document.getElementById('active-entries').textContent = data.timeEntries.length;
+                function saveIntegration(platform) {
+                              const token = document.getElementById(platform + '-token').value;
+                              if (!token) { alert('Enter API token'); return; }
+                              data.integrations[platform] = token;
+                              saveData();
+                              document.getElementById(platform + '-status').textContent = '✓ Saved';
+                }
 
-                    const atRisk = checkProjectHealth();
-                    document.getElementById('at-risk-count').textContent = new Set(atRisk.map(p => p.id)).size;
+                function testIntegration(platform) {
+                              const status = document.getElementById(platform + '-status');
+                              status.textContent = 'Testing...';
+                              setTimeout(() => {
+                                                const token = document.getElementById(platform + '-token').value;
+                                                status.textContent = token ? '✓ Connected' : '✗ No token';
+                              }, 1000);
+                }
 
-                    renderProjectsStatus();
-            }
-
-            // Integration functions
-            function loadIntegrationSettings() {
-                    const slack = localStorage.getItem('slack-webhook') || '';
-                    const basecamp = localStorage.getItem('basecamp-token') || '';
-                    const google = localStorage.getItem('google-token') || '';
-                    const linkedin = localStorage.getItem('linkedin-token') || '';
-
-                    document.getElementById('slack-webhook').value = slack;
-                    document.getElementById('basecamp-token').value = basecamp;
-                    document.getElementById('google-token').value = google;
-                    document.getElementById('linkedin-token').value = linkedin;
-            }
-
-            function saveIntegrationSettings() {
-                    localStorage.setItem('slack-webhook', document.getElementById('slack-webhook').value);
-                    localStorage.setItem('basecamp-token', document.getElementById('basecamp-token').value);
-                    localStorage.setItem('google-token', document.getElementById('google-token').value);
-                    localStorage.setItem('linkedin-token', document.getElementById('linkedin-token').value);
-
-                    data.notificationSettings.notifyOverbudget = document.getElementById('notify-overbudget').checked;
-                    data.notificationSettings.notifyDeadline = document.getElementById('notify-deadline').checked;
-                    data.notificationSettings.notifySlack = document.getElementById('notify-slack').checked;
-
-                    saveData();
-                    alert('Integration settings saved!');
-            }
-
-            function testSlackIntegration() {
-                    const webhook = document.getElementById('slack-webhook').value;
-                    if (!webhook) {
-                              alert('Please enter a Slack Webhook URL');
-                              return;
-                    }
-                    sendSlackNotification('✅ CrewOps Slack integration test successful!');
-                    alert('Test notification sent to Slack!');
-            }
-
-            function sendSlackNotification(message) {
-                    const webhook = localStorage.getItem('slack-webhook');
-                    if (!webhook) return;
-
-                    // In production, this would be sent from backend
-                    console.log('Slack notification:', message);
-            }
-
-            function testBasecampIntegration() {
-                    alert('Basecamp integration configured. Sync will happen automatically with your projects.');
-            }
-
-            function testGoogleIntegration() {
-                    alert('Google Calendar integration configured. Project deadlines will be added to your calendar.');
-            }
-
-            function testLinkedInIntegration() {
-                    alert('LinkedIn integration configured. Crew member profiles will be enriched with public data.');
-            }
-
-            // Delete functions
-            function deleteCrewMember(id) {
-                    data.crew = data.crew.filter(c => c.id !== id);
-                    saveData();
-            }
-
-            function deleteProject(id) {
-                    data.projects = data.projects.filter(p => p.id !== id);
-                    data.timeEntries = data.timeEntries.filter(e => e.projectId !== id);
-                    saveData();
-            }
-
-            function deleteTimeEntry(id) {
-                    data.timeEntries = data.timeEntries.filter(e => e.id !== id);
-                    saveData();
-            }
-
-            // Render all
-            function renderAll() {
-                    renderCrewList();
-                    renderProjectsList();
-                    renderTimeEntries();
-                    updateDashboard();
-            }
-
-            // Initialize
-            loadData();
-            renderAll();
-
-            // Auto-check project health every 30 seconds
-            setInterval(() => checkProjectHealth(), 30000);
+                loadData();
+                updateDashboard();
       </script>
-    </div>body>
-  </body>html>
+  </body>body>
+</html>html>
       </script></option></option>
-    </style></title>
+                                                                                                                                </div>
+                                                                                                                                </div>
+      </style></title>
   </head>
-      

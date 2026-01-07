@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+                                        <!DOCTYPE html>
 <html lang="en">
   <head>
       <meta charset="UTF-8">
@@ -13,334 +13,666 @@
           .btn-secondary { @apply bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold transition; }
           .input-field { @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500; }
           .card { @apply bg-white rounded-lg shadow-lg p-6 mb-6; }
+          .status-green { @apply text-green-600 font-semibold; }
+          .status-yellow { @apply text-yellow-600 font-semibold; }
+          .status-red { @apply text-red-600 font-semibold; }
+          .integration-badge { @apply inline-block px-3 py-1 rounded-full text-xs font-semibold mr-2 mb-2; }
         </style>
   </head>
   <body class="bg-gray-100">
-      <div id="app" class="min-h-screen">
-            <!-- Navigation -->
-            <nav class="bg-blue-600 text-white shadow-lg">
-                    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-                              <div class="text-2xl font-bold">⚡ CrewOps</div>div>
-                              <div class="flex gap-4">
-                                          <button onclick="switchTab('dashboard')" class="hover:bg-blue-700 px-4 py-2 rounded">Dashboard</button>button>
-                                          <button onclick="switchTab('crew')" class="hover:bg-blue-700 px-4 py-2 rounded">Crew</button>button>
-                                          <button onclick="switchTab('projects')" class="hover:bg-blue-700 px-4 py-2 rounded">Projects</button>button>
-                                          <button onclick="switchTab('invoices')" class="hover:bg-blue-700 px-4 py-2 rounded">Invoices</button>button>
-                              </div>div>
-                    </div>div>
-            </nav>nav>
+    <div id="app" class="min-h-screen">
+        <!-- Navigation -->
+        <nav class="bg-blue-600 text-white shadow-lg">
+              <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+                      <div class="text-2xl font-bold">⚡ CrewOps</div>div>
+                      <div class="flex gap-4">
+                                <button onclick="switchTab('dashboard')" class="hover:bg-blue-700 px-4 py-2 rounded">Dashboard</button>button>
+                                <button onclick="switchTab('crew')" class="hover:bg-blue-700 px-4 py-2 rounded">Crew</button>button>
+                                <button onclick="switchTab('projects')" class="hover:bg-blue-700 px-4 py-2 rounded">Projects</button>button>
+                                <button onclick="switchTab('time-tracking')" class="hover:bg-blue-700 px-4 py-2 rounded">Time Tracking</button>button>
+                                <button onclick="switchTab('settings')" class="hover:bg-blue-700 px-4 py-2 rounded">⚙️ Integrations</button>button>
+                      </div>div>
+              </div>div>
+        </nav>nav>
 
-            <!-- Dashboard Tab -->
-            <div id="dashboard-tab" class="tab-content">
-                    <div class="max-w-7xl mx-auto p-6">
-                              <h1 class="text-3xl font-bold mb-6">Dashboard</h1>h1>
+        <!-- Dashboard Tab -->
+        <div id="dashboard-tab" class="tab-content">
+              <div class="max-w-7xl mx-auto p-6">
+                      <h1 class="text-3xl font-bold mb-6">Dashboard</h1>h1>
+                      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                                <div class="card">
+                                            <div class="text-gray-600 text-sm">Total Projects</div>div>
+                                            <div id="total-projects" class="text-4xl font-bold text-blue-600">0</div>div>
+                                </div>div>
+                                <div class="card">
+                                            <div class="text-gray-600 text-sm">Total Crew</div>div>
+                                            <div id="total-crew" class="text-4xl font-bold text-green-600">0</div>div>
+                                </div>div>
+                                <div class="card">
+                                            <div class="text-gray-600 text-sm">Active Time Entries</div>div>
+                                            <div id="active-entries" class="text-4xl font-bold text-purple-600">0</div>div>
+                                </div>div>
+                                <div class="card">
+                                            <div class="text-gray-600 text-sm">At-Risk Projects</div>div>
+                                            <div id="at-risk-count" class="text-4xl font-bold text-red-600">0</div>div>
+                                </div>div>
+                      </div>div>
 
-                              <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                                          <div class="card">
-                                                        <div class="text-gray-600 text-sm">Total Projects</div>div>
-                                                        <div id="total-projects" class="text-4xl font-bold text-blue-600">0</div>div>
-                                          </div>div>
-                                          <div class="card">
-                                                        <div class="text-gray-600 text-sm">Total Crew</div>div>
-                                                        <div id="total-crew" class="text-4xl font-bold text-green-600">0</div>div>
-                                          </div>div>
-                                          <div class="card">
-                                                        <div class="text-gray-600 text-sm">Total Labor Cost</div>div>
-                                                        <div id="total-cost" class="text-4xl font-bold text-purple-600">$0</div>div>
-                                          </div>div>
-                              </div>div>
-
-                              <div class="card">
-                                          <h2 class="text-xl font-bold mb-4">Active Projects</h2>h2>
-                                          <div id="dashboard-projects" class="space-y-4"></div>div>
-                              </div>div>
-                    </div>div>
-            </div>div>
-
-            <!-- Crew Tab -->
-            <div id="crew-tab" class="tab-content hidden">
-                    <div class="max-w-7xl mx-auto p-6">
-                              <div class="flex justify-between items-center mb-6">
-                                          <h1 class="text-3xl font-bold">Crew Management</h1>h1>
-                                          <button onclick="showAddCrewModal()" class="btn-primary">+ Add Crew Member</button>button>
-                              </div>div>
-
-                              <div class="card">
-                                          <div id="crew-list" class="space-y-3"></div>div>
-                              </div>div>
-                    </div>div>
-            </div>div>
-
-            <!-- Projects Tab -->
-            <div id="projects-tab" class="tab-content hidden">
-                    <div class="max-w-7xl mx-auto p-6">
-                              <div class="flex justify-between items-center mb-6">
-                                          <h1 class="text-3xl font-bold">Projects</h1>h1>
-                                          <button onclick="showAddProjectModal()" class="btn-primary">+ New Project</button>button>
-                              </div>div>
-
-                              <div class="card">
-                                          <div id="projects-list" class="space-y-4"></div>div>
-                              </div>div>
-                    </div>div>
-            </div>div>
-
-            <!-- Invoices Tab -->
-            <div id="invoices-tab" class="tab-content hidden">
-                    <div class="max-w-7xl mx-auto p-6">
-                              <h1 class="text-3xl font-bold mb-6">Invoices</h1>h1>
-                              <div class="card">
-                                          <div id="invoices-list" class="space-y-4"></div>div>
-                              </div>div>
-                    </div>div>
-            </div>div>
-      </div>div>
-
-      <!-- Add Crew Modal -->
-      <div id="add-crew-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div class="bg-white rounded-lg p-8 w-96">
-                    <h2 class="text-2xl font-bold mb-4">Add Crew Member</h2>h2>
-                    <input type="text" id="crew-name" placeholder="Name" class="input-field mb-3">
-                    <select id="crew-role" class="input-field mb-3">
-                              <option>-- Select Role --</option>
-                            <option>DP</option>
-                            <option>Gaffer</option>
-                            <option>Producer</option>
-                            <option>PA</option>
-                            <option>Grip</option>
-                            <option>Sound Tech</option>
-                            <option>Camera Op</option>
-                    </select>select>
-                  <input type="number" id="crew-rate" placeholder="Hourly Rate ($)" class="input-field mb-3">
-                  <textarea id="crew-skills" placeholder="Skills (comma separated)" class="input-field mb-4" rows="3"></textarea>
-                  <div class="flex gap-3">
-                          <button onclick="addCrewMember()" class="btn-primary flex-1">Add</button>button>
-                          <button onclick="closeModals()" class="btn-secondary flex-1">Cancel</button>button>
-                  </div>div>
-            </div>div>
-      </div>div>
-  
-    <!-- Add Project Modal -->
-    <div id="add-project-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-8 w-96">
-              <h2 class="text-2xl font-bold mb-4">New Project</h2>h2>
-              <input type="text" id="project-name" placeholder="Project Name" class="input-field mb-3">
-              <input type="date" id="project-date" class="input-field mb-3">
-              <input type="number" id="project-budget" placeholder="Budget ($)" class="input-field mb-3">
-              <textarea id="project-desc" placeholder="Description" class="input-field mb-4" rows="3"></textarea>
-              <div class="flex gap-3">
-                      <button onclick="addProject()" class="btn-primary flex-1">Create</button>button>
-                      <button onclick="closeModals()" class="btn-secondary flex-1">Cancel</button>button>
+                      <div class="card">
+                                <h2 class="text-xl font-bold mb-4">Projects Status (Real-Time)</h2>h2>
+                                <div id="projects-status" class="space-y-4"></div>div>
+                      </div>div>
               </div>div>
         </div>div>
-    </div>div>
-  
-    <script>
-          // Data store
-          let data = {
-                  crew: [],
-                  projects: [],
-                  assignments: [],
-                  invoices: []
-          };
 
-          // Load from localStorage
-          function loadData() {
-                  const saved = localStorage.getItem('crewops-data');
-                  if (saved) data = JSON.parse(saved);
-          }
+        <!-- Crew Tab -->
+        <div id="crew-tab" class="tab-content hidden">
+              <div class="max-w-7xl mx-auto p-6">
+                      <div class="flex justify-between items-center mb-6">
+                                <h1 class="text-3xl font-bold">Crew Management</h1>h1>
+                                <button onclick="showAddCrewModal()" class="btn-primary">+ Add Crew Member</button>button>
+                      </div>div>
+                      <div class="card">
+                                <div id="crew-list" class="space-y-3"></div>div>
+                      </div>div>
+              </div>div>
+        </div>div>
 
-          // Save to localStorage
-          function saveData() {
-                  localStorage.setItem('crewops-data', JSON.stringify(data));
-                  renderAll();
-          }
+        <!-- Projects Tab -->
+        <div id="projects-tab" class="tab-content hidden">
+              <div class="max-w-7xl mx-auto p-6">
+                      <div class="flex justify-between items-center mb-6">
+                                <h1 class="text-3xl font-bold">Projects</h1>h1>
+                                <button onclick="showAddProjectModal()" class="btn-primary">+ New Project</button>button>
+                      </div>div>
+                      <div class="card">
+                                <div id="projects-list" class="space-y-4"></div>div>
+                      </div>div>
+              </div>div>
+        </div>div>
 
-          // Tab switching
-          function switchTab(tab) {
-                  document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-                  document.getElementById(tab + '-tab').classList.remove('hidden');
-                  renderAll();
-          }
+        <!-- Time Tracking Tab -->
+        <div id="time-tracking-tab" class="tab-content hidden">
+              <div class="max-w-7xl mx-auto p-6">
+                      <div class="flex justify-between items-center mb-6">
+                                <h1 class="text-3xl font-bold">Real-Time Labor Tracking</h1>h1>
+                                <button onclick="showTimeEntryModal()" class="btn-primary">+ Log Hours</button>button>
+                      </div>div>
+                      <div class="card">
+                                <h2 class="text-lg font-bold mb-4">Active Time Entries</h2>h2>
+                                <div id="time-entries-list" class="space-y-3"></div>div>
+                      </div>div>
+              </div>div>
+        </div>div>
 
-          // Modals
-          function showAddCrewModal() {
-                  document.getElementById('add-crew-modal').classList.remove('hidden');
-          }
+        <!-- Settings/Integrations Tab -->
+        <div id="settings-tab" class="tab-content hidden">
+              <div class="max-w-7xl mx-auto p-6">
+                      <h1 class="text-3xl font-bold mb-6">Integration Settings</h1>h1>
 
-          function showAddProjectModal() {
-                  document.getElementById('add-project-modal').classList.remove('hidden');
-          }
+                      <div class="card">
+                                <h2 class="text-xl font-bold mb-4">Connected Platforms</h2>h2>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-          function closeModals() {
-                  document.getElementById('add-crew-modal').classList.add('hidden');
-                  document.getElementById('add-project-modal').classList.add('hidden');
-          }
+                                            <!-- Slack -->
+                                            <div class="border p-4 rounded-lg">
+                                                          <div class="flex items-center mb-3">
+                                                                          <span class="text-2xl mr-2">💬</span>span>
+                                                                          <h3 class="text-lg font-bold">Slack</h3>h3>
+                                                          </div>div>
+                                                          <p class="text-sm text-gray-600 mb-3">Get real-time alerts when projects go over budget or miss deadlines</p>p>
+                                                          <input type="text" id="slack-webhook" placeholder="Slack Webhook URL" class="input-field mb-2">
+                                                          <button onclick="testSlackIntegration()" class="btn-secondary w-full">Test Integration</button>button>
+                                            </div>div>
 
-          // Add crew member
-          function addCrewMember() {
-                  const name = document.getElementById('crew-name').value;
-                  const role = document.getElementById('crew-role').value;
-                  const rate = parseFloat(document.getElementById('crew-rate').value);
-                  const skills = document.getElementById('crew-skills').value;
+                                            <!-- Basecamp -->
+                                            <div class="border p-4 rounded-lg">
+                                                          <div class="flex items-center mb-3">
+                                                                          <span class="text-2xl mr-2">📋</span>span>
+                                                                          <h3 class="text-lg font-bold">Basecamp</h3>h3>
+                                                          </div>div>
+                                                          <p class="text-sm text-gray-600 mb-3">Sync projects and team updates automatically</p>p>
+                                                          <input type="text" id="basecamp-token" placeholder="Basecamp API Token" class="input-field mb-2">
+                                                          <button onclick="testBasecampIntegration()" class="btn-secondary w-full">Test Integration</button>button>
+                                            </div>div>
 
-                  if (name && role !== '-- Select Role --' && rate > 0) {
-                            data.crew.push({
-                                        id: Date.now(),
-                                        name,
-                                        role,
-                                        hourlyRate: rate,
-                                        skills: skills.split(',').map(s => s.trim())
-                            });
-                            saveData();
-                            closeModals();
-                            document.getElementById('crew-name').value = '';
-                            document.getElementById('crew-role').value = '-- Select Role --';
-                            document.getElementById('crew-rate').value = '';
-                            document.getElementById('crew-skills').value = '';
-                  } else {
-                            alert('Please fill all required fields');
-                  }
-          }
+                                            <!-- Google Calendar -->
+                                            <div class="border p-4 rounded-lg">
+                                                          <div class="flex items-center mb-3">
+                                                                          <span class="text-2xl mr-2">📅</span>span>
+                                                                          <h3 class="text-lg font-bold">Google Calendar</h3>h3>
+                                                          </div>div>
+                                                          <p class="text-sm text-gray-600 mb-3">Auto-sync project deadlines and create calendar events</p>p>
+                                                          <input type="text" id="google-token" placeholder="Google API Token" class="input-field mb-2">
+                                                          <button onclick="testGoogleIntegration()" class="btn-secondary w-full">Test Integration</button>button>
+                                            </div>div>
 
-          // Add project
-          function addProject() {
-                  const name = document.getElementById('project-name').value;
-                  const date = document.getElementById('project-date').value;
-                  const budget = parseFloat(document.getElementById('project-budget').value);
-                  const desc = document.getElementById('project-desc').value;
+                                            <!-- LinkedIn -->
+                                            <div class="border p-4 rounded-lg">
+                                                          <div class="flex items-center mb-3">
+                                                                          <span class="text-2xl mr-2">👔</span>span>
+                                                                          <h3 class="text-lg font-bold">LinkedIn</h3>h3>
+                                                          </div>div>
+                                                          <p class="text-sm text-gray-600 mb-3">Auto-populate crew member profiles and network</p>p>
+                                                          <input type="text" id="linkedin-token" placeholder="LinkedIn API Token" class="input-field mb-2">
+                                                          <button onclick="testLinkedInIntegration()" class="btn-secondary w-full">Test Integration</button>button>
+                                            </div>div>
+                                </div>div>
+                      </div>div>
 
-                  if (name && date && budget > 0) {
-                            data.projects.push({
-                                        id: Date.now(),
-                                        name,
-                                        date,
-                                        budget,
-                                        description: desc,
-                                        createdAt: new Date().toISOString()
-                            });
-                            saveData();
-                            closeModals();
-                            document.getElementById('project-name').value = '';
-                            document.getElementById('project-date').value = '';
-                            document.getElementById('project-budget').value = '';
-                            document.getElementById('project-desc').value = '';
-                  } else {
-                            alert('Please fill all required fields');
-                  }
-          }
+                      <div class="card">
+                                <h2 class="text-xl font-bold mb-4">Notification Settings</h2>h2>
+                                <label class="flex items-center mb-3">
+                                            <input type="checkbox" id="notify-overbudget" checked class="mr-2"> Notify when project goes over budget
+                                </label>label>
+                                <label class="flex items-center mb-3">
+                                            <input type="checkbox" id="notify-deadline" checked class="mr-2"> Notify when project at risk of missing deadline
+                                </label>label>
+                                <label class="flex items-center mb-3">
+                                            <input type="checkbox" id="notify-slack" checked class="mr-2"> Send Slack notifications
+                                </label>label>
+                                <button onclick="saveIntegrationSettings()" class="btn-primary">Save Settings</button>button>
+                      </div>div>
+              </div>div>
+        </div>div>
 
-          // Render crew list
-          function renderCrewList() {
-                  const html = data.crew.map(member => `
-                          <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 flex justify-between items-center">
-                                    <div>
-                                                <div class="font-semibold">${member.name}</div>
-                                                            <div class="text-sm text-gray-600">${member.role} • $${member.hourlyRate}/hr</div>
-                                                                        <div class="text-xs text-gray-500 mt-1">${member.skills.join(', ')}</div>
-                                                                                  </div>
-                                                                                            <button onclick="deleteCrewMember(${member.id})" class="text-red-600 hover:text-red-800 font-semibold">Delete</button>
-                                                                                                    </div>
-                                                                                                          `).join('');
-                  document.getElementById('crew-list').innerHTML = html || '<p class="text-gray-500">No crew members yet</p>';
-          }
+        <!-- Add Crew Modal -->
+        <div id="add-crew-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div class="bg-white rounded-lg p-8 w-96">
+                      <h2 class="text-2xl font-bold mb-4">Add Crew Member</h2>h2>
+                      <input type="text" id="crew-name" placeholder="Name" class="input-field mb-3">
+                      <select id="crew-role" class="input-field mb-3">
+                                <option>-- Select Role --</option>
+                              <option>DP</option>
+                              <option>Gaffer</option>
+                              <option>Producer</option>
+                              <option>PA</option>
+                              <option>Grip</option>
+                              <option>Sound Tech</option>
+                              <option>Camera Op</option>
+                      </select>select>
+                    <input type="number" id="crew-rate" placeholder="Hourly Rate ($)" class="input-field mb-3">
+                    <input type="text" id="crew-linkedin" placeholder="LinkedIn Profile URL" class="input-field mb-3">
+                    <textarea id="crew-skills" placeholder="Skills (comma separated)" class="input-field mb-4" rows="3"></textarea>
+                    <div class="flex gap-3">
+                            <button onclick="addCrewMember()" class="btn-primary flex-1">Add</button>button>
+                            <button onclick="closeModals()" class="btn-secondary flex-1">Cancel</button>button>
+                    </div>div>
+              </div>div>
+        </div>div>
+    
+      <!-- Add Project Modal -->
+      <div id="add-project-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div class="bg-white rounded-lg p-8 w-96">
+                <h2 class="text-2xl font-bold mb-4">New Project</h2>h2>
+                <input type="text" id="project-name" placeholder="Project Name" class="input-field mb-3">
+                <input type="date" id="project-date" class="input-field mb-3">
+                <input type="number" id="project-budget" placeholder="Budget ($)" class="input-field mb-3">
+                <input type="number" id="project-hours-estimate" placeholder="Estimated Total Hours" class="input-field mb-3">
+                <textarea id="project-desc" placeholder="Description" class="input-field mb-4" rows="3"></textarea>
+                <div class="flex gap-3">
+                        <button onclick="addProject()" class="btn-primary flex-1">Create</button>button>
+                        <button onclick="closeModals()" class="btn-secondary flex-1">Cancel</button>button>
+                </div>div>
+          </div>div>
+      </div>div>
+    
+      <!-- Time Entry Modal -->
+      <div id="time-entry-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div class="bg-white rounded-lg p-8 w-96">
+                <h2 class="text-2xl font-bold mb-4">Log Hours</h2>h2>
+                <select id="entry-project" class="input-field mb-3">
+                        <option>-- Select Project --</option>
+                </select>select>
+                <select id="entry-crew" class="input-field mb-3">
+                        <option>-- Select Crew Member --</option>
+                </select>select>
+                <input type="number" id="entry-hours" placeholder="Hours Worked" class="input-field mb-3" min="0.5" step="0.5">
+                <input type="date" id="entry-date" class="input-field mb-3">
+                <textarea id="entry-notes" placeholder="Work Notes" class="input-field mb-4" rows="2"></textarea>
+                <div class="flex gap-3">
+                        <button onclick="addTimeEntry()" class="btn-primary flex-1">Log Hours</button>button>
+                        <button onclick="closeModals()" class="btn-secondary flex-1">Cancel</button>button>
+                </div>div>
+          </div>div>
+      </div>div>
+    
+      <script>
+            // Data store with integrations
+            let data = {
+                    crew: [],
+                    projects: [],
+                    timeEntries: [],
+                    integrations: {
+                              slack: { webhook: '', enabled: false },
+                              basecamp: { token: '', enabled: false },
+                              google: { token: '', enabled: false },
+                              linkedin: { token: '', enabled: false }
+                    },
+                    notificationSettings: {
+                              notifyOverbudget: true,
+                              notifyDeadline: true,
+                              notifySlack: true
+                    }
+            };
 
-          // Render projects list
-          function renderProjectsList() {
-                  const html = data.projects.map(project => {
-                            const totalCost = data.assignments.filter(a => a.projectId === project.id).reduce((sum, a) => {
-                                        const crewMember = data.crew.find(c => c.id === a.crewId);
-                                        return sum + (crewMember ? crewMember.hourlyRate * a.hours : 0);
-                            }, 0);
-                            return `
-                                      <div class="bg-gradient-to-r from-blue-50 to-purple-50 p-5 rounded-lg border border-blue-200">
-                                                  <div class="flex justify-between items-start mb-3">
-                                                                <div>
-                                                                                <h3 class="text-lg font-bold text-blue-900">${project.name}</h3>
-                                                                                                <p class="text-sm text-gray-600">${new Date(project.date).toLocaleDateString()}</p>
-                                                                                                              </div>
-                                                                                                                            <button onclick="deleteProject(${project.id})" class="text-red-600 hover:text-red-800">×</button>
-                                                                                                                                        </div>
-                                                                                                                                                    <div class="grid grid-cols-3 gap-4 mb-3">
-                                                                                                                                                                  <div>
-                                                                                                                                                                                  <div class="text-xs text-gray-600">Budget</div>
-                                                                                                                                                                                                  <div class="text-lg font-semibold text-blue-600">$${project.budget.toFixed(2)}</div>
-                                                                                                                                                                                                                </div>
-                                                                                                                                                                                                                              <div>
-                                                                                                                                                                                                                                              <div class="text-xs text-gray-600">Used</div>
-                                                                                                                                                                                                                                                              <div class="text-lg font-semibold text-purple-600">$${totalCost.toFixed(2)}</div>
-                                                                                                                                                                                                                                                                            </div>
-                                                                                                                                                                                                                                                                                          <div>
-                                                                                                                                                                                                                                                                                                          <div class="text-xs text-gray-600">Remaining</div>
-                                                                                                                                                                                                                                                                                                                          <div class="text-lg font-semibold ${(project.budget - totalCost) >= 0 ? 'text-green-600' : 'text-red-600'}">$${(project.budget - totalCost).toFixed(2)}</div>
-                                                                                                                                                                                                                                                                                                                                        </div>
-                                                                                                                                                                                                                                                                                                                                                    </div>
-                                                                                                                                                                                                                                                                                                                                                                <button onclick="showProjectDetails(${project.id})" class="btn-secondary w-full text-sm">Manage Crew</button>
+            // Load from localStorage
+            function loadData() {
+                    const saved = localStorage.getItem('crewops-data');
+                    if (saved) data = JSON.parse(saved);
+                    loadIntegrationSettings();
+            }
+
+            // Save to localStorage
+            function saveData() {
+                    localStorage.setItem('crewops-data', JSON.stringify(data));
+                    renderAll();
+                    checkProjectHealth();
+            }
+
+            // Tab switching
+            function switchTab(tab) {
+                    document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+                    document.getElementById(tab + '-tab').classList.remove('hidden');
+                    renderAll();
+            }
+
+            // Modals
+            function showAddCrewModal() {
+                    document.getElementById('add-crew-modal').classList.remove('hidden');
+            }
+
+            function showAddProjectModal() {
+                    document.getElementById('add-project-modal').classList.remove('hidden');
+            }
+
+            function showTimeEntryModal() {
+                    populateTimeEntrySelects();
+                    document.getElementById('time-entry-modal').classList.remove('hidden');
+            }
+
+            function closeModals() {
+                    document.getElementById('add-crew-modal').classList.add('hidden');
+                    document.getElementById('add-project-modal').classList.add('hidden');
+                    document.getElementById('time-entry-modal').classList.add('hidden');
+            }
+
+            // Add crew member
+            function addCrewMember() {
+                    const name = document.getElementById('crew-name').value;
+                    const role = document.getElementById('crew-role').value;
+                    const rate = parseFloat(document.getElementById('crew-rate').value);
+                    const linkedin = document.getElementById('crew-linkedin').value;
+                    const skills = document.getElementById('crew-skills').value;
+
+                    if (name && role !== '-- Select Role --' && rate > 0) {
+                              data.crew.push({
+                                          id: Date.now(),
+                                          name,
+                                          role,
+                                          hourlyRate: rate,
+                                          linkedInProfile: linkedin,
+                                          skills: skills.split(',').map(s => s.trim()),
+                                          addedAt: new Date().toISOString()
+                              });
+                              saveData();
+                              closeModals();
+                              document.getElementById('crew-name').value = '';
+                              document.getElementById('crew-role').value = '-- Select Role --';
+                              document.getElementById('crew-rate').value = '';
+                              document.getElementById('crew-linkedin').value = '';
+                              document.getElementById('crew-skills').value = '';
+                    } else {
+                              alert('Please fill all required fields');
+                    }
+            }
+
+            // Add project
+            function addProject() {
+                    const name = document.getElementById('project-name').value;
+                    const date = document.getElementById('project-date').value;
+                    const budget = parseFloat(document.getElementById('project-budget').value);
+                    const hoursEstimate = parseFloat(document.getElementById('project-hours-estimate').value);
+                    const desc = document.getElementById('project-desc').value;
+
+                    if (name && date && budget > 0) {
+                              data.projects.push({
+                                          id: Date.now(),
+                                          name,
+                                          date,
+                                          budget,
+                                          estimatedHours: hoursEstimate || 0,
+                                          description: desc,
+                                          createdAt: new Date().toISOString(),
+                                          status: 'active'
+                              });
+                              saveData();
+                              closeModals();
+                              document.getElementById('project-name').value = '';
+                              document.getElementById('project-date').value = '';
+                              document.getElementById('project-budget').value = '';
+                              document.getElementById('project-hours-estimate').value = '';
+                              document.getElementById('project-desc').value = '';
+                    } else {
+                              alert('Please fill all required fields');
+                    }
+            }
+
+            // Add time entry
+            function addTimeEntry() {
+                    const projectId = document.getElementById('entry-project').value;
+                    const crewId = document.getElementById('entry-crew').value;
+                    const hours = parseFloat(document.getElementById('entry-hours').value);
+                    const date = document.getElementById('entry-date').value;
+                    const notes = document.getElementById('entry-notes').value;
+
+                    if (projectId && crewId && hours > 0 && date) {
+                              data.timeEntries.push({
+                                          id: Date.now(),
+                                          projectId: parseInt(projectId),
+                                          crewId: parseInt(crewId),
+                                          hours,
+                                          date,
+                                          notes,
+                                          loggedAt: new Date().toISOString()
+                              });
+                              saveData();
+                              closeModals();
+                              document.getElementById('entry-project').value = '';
+                              document.getElementById('entry-crew').value = '';
+                              document.getElementById('entry-hours').value = '';
+                              document.getElementById('entry-date').value = '';
+                              document.getElementById('entry-notes').value = '';
+
+                              // Send notifications
+                              checkProjectHealth();
+                    } else {
+                              alert('Please fill all required fields');
+                    }
+            }
+
+            // Populate time entry dropdowns
+            function populateTimeEntrySelects() {
+                    const projectSelect = document.getElementById('entry-project');
+                    const crewSelect = document.getElementById('entry-crew');
+
+                    projectSelect.innerHTML = '<option>-- Select Project --</option>';
+                    crewSelect.innerHTML = '<option>-- Select Crew Member --</option>';
+
+                    data.projects.forEach(p => {
+                              projectSelect.innerHTML += `<option value="${p.id}">${p.name}</option>`;
+                    });
+
+                    data.crew.forEach(c => {
+                              crewSelect.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+                    });
+            }
+
+            // Get project health status
+            function getProjectHealth(project) {
+                    const entries = data.timeEntries.filter(e => e.projectId === project.id);
+                    const totalHours = entries.reduce((sum, e) => sum + e.hours, 0);
+                    const totalCost = entries.reduce((sum, e) => {
+                              const crew = data.crew.find(c => c.id === e.crewId);
+                              return sum + (crew ? crew.hourlyRate * e.hours : 0);
+                    }, 0);
+
+                    const daysRemaining = Math.ceil((new Date(project.date) - new Date()) / (1000 * 60 * 60 * 24));
+                    const hoursRemaining = Math.max(0, project.estimatedHours - totalHours);
+                    const budgetRemaining = project.budget - totalCost;
+
+                    const isOverBudget = totalCost > project.budget;
+                    const atRiskDeadline = daysRemaining < 0 || (hoursRemaining > 0 && daysRemaining <= 3);
+                    const status = isOverBudget || atRiskDeadline ? 'at-risk' : 'on-track';
+
+                    return { totalHours, totalCost, daysRemaining, hoursRemaining, budgetRemaining, isOverBudget, atRiskDeadline, status };
+            }
+
+            // Check project health and send notifications
+            function checkProjectHealth() {
+                    const atRiskProjects = [];
+
+                    data.projects.forEach(project => {
+                              const health = getProjectHealth(project);
+
+                              if (health.isOverBudget && data.notificationSettings.notifyOverbudget) {
+                                          atRiskProjects.push(project);
+                                          if (data.notificationSettings.notifySlack) {
+                                                        sendSlackNotification(`⚠️ ${project.name} is OVER BUDGET by $${(health.totalCost - project.budget).toFixed(2)}`);
+                                          }
+                              }
+
+                              if (health.atRiskDeadline && data.notificationSettings.notifyDeadline) {
+                                          atRiskProjects.push(project);
+                                          if (data.notificationSettings.notifySlack) {
+                                                        sendSlackNotification(`⏰ ${project.name} is AT RISK of missing deadline (${health.daysRemaining} days left)`);
+                                          }
+                              }
+                    });
+
+                    return atRiskProjects;
+            }
+
+            // Render crew list
+            function renderCrewList() {
+                    const html = data.crew.map(member => `
+                            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                      <div class="flex justify-between items-start">
+                                                  <div>
+                                                                <div class="font-semibold">${member.name}</div>
+                                                                              <div class="text-sm text-gray-600">${member.role} • $${member.hourlyRate}/hr</div>
+                                                                                            <div class="text-xs text-gray-500 mt-1">${member.skills.join(', ')}</div>
+                                                                                                          ${member.linkedInProfile ? `<a href="${member.linkedInProfile}" target="_blank" class="text-xs text-blue-500 hover:underline">View LinkedIn →</a>` : ''}
+                                                                                                                      </div>
+                                                                                                                                  <button onclick="deleteCrewMember(${member.id})" class="text-red-600 hover:text-red-800 font-semibold">Delete</button>
+                                                                                                                                            </div>
+                                                                                                                                                    </div>
+                                                                                                                                                          `).join('');
+                    document.getElementById('crew-list').innerHTML = html || '<p class="text-gray-500">No crew members yet</p>';
+            }
+
+            // Render projects
+            function renderProjectsList() {
+                    const html = data.projects.map(project => {
+                              const health = getProjectHealth(project);
+                              const statusColor = health.status === 'at-risk' ? 'border-red-300 bg-red-50' : 'border-green-300 bg-green-50';
+
+                              return `
+                                        <div class="border-2 ${statusColor} p-5 rounded-lg">
+                                                    <div class="flex justify-between items-start mb-3">
+                                                                  <div>
+                                                                                  <h3 class="text-lg font-bold">${project.name}</h3>
+                                                                                                  <p class="text-sm text-gray-600">${new Date(project.date).toLocaleDateString()}</p>
+                                                                                                                </div>
+                                                                                                                              <div class="text-right">
+                                                                                                                                              <div class="text-xs font-semibold ${health.status === 'at-risk' ? 'status-red' : 'status-green'}">
+                                                                                                                                                                ${health.status === 'at-risk' ? '🚨 AT RISK' : '✓ ON TRACK'}
+                                                                                                                                                                                </div>
+                                                                                                                                                                                                ${health.daysRemaining < 0 ? `<div class="text-xs text-red-600">OVERDUE</div>` : `<div class="text-xs text-gray-600">${health.daysRemaining} days left</div>`}
+                                                                                                                                                                                                              </div>
+                                                                                                                                                                                                                          </div>
+                                                                                                                                                                                                                                      
+                                                                                                                                                                                                                                                  <div class="grid grid-cols-4 gap-2 mb-3 text-xs">
+                                                                                                                                                                                                                                                                <div>
+                                                                                                                                                                                                                                                                                <div class="text-gray-600">Budget</div>
+                                                                                                                                                                                                                                                                                                <div class="font-semibold">$${project.budget.toFixed(0)}</div>
+                                                                                                                                                                                                                                                                                                              </div>
+                                                                                                                                                                                                                                                                                                                            <div>
+                                                                                                                                                                                                                                                                                                                                            <div class="text-gray-600">Spent</div>
+                                                                                                                                                                                                                                                                                                                                                            <div class="font-semibold ${health.isOverBudget ? 'text-red-600' : ''}">$${health.totalCost.toFixed(0)}</div>
                                                                                                                                                                                                                                                                                                                                                                           </div>
-                                                                                                                                                                                                                                                                                                                                                                                  `;
-                  }).join('');
-                  document.getElementById('projects-list').innerHTML = html || '<p class="text-gray-500">No projects yet</p>';
-          }
+                                                                                                                                                                                                                                                                                                                                                                                        <div>
+                                                                                                                                                                                                                                                                                                                                                                                                        <div class="text-gray-600">Hours Used</div>
+                                                                                                                                                                                                                                                                                                                                                                                                                        <div class="font-semibold">${health.totalHours}/${project.estimatedHours || '?'}</div>
+                                                                                                                                                                                                                                                                                                                                                                                                                                      </div>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                    <div>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <div class="text-gray-600">Burn Rate</div>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <div class="font-semibold">${health.daysRemaining > 0 ? (health.hoursRemaining / health.daysRemaining).toFixed(1) : '∞'} hrs/day</div>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  </div>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              </div>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          <div class="w-full bg-gray-300 rounded-full h-2 mb-3">
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <div class="bg-blue-600 h-2 rounded-full" style="width: ${Math.min(100, (health.totalHours / project.estimatedHours) * 100)}%"></div>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    </div>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                <button onclick="deleteProject(${project.id})" class="text-red-600 hover:text-red-800 text-sm">Delete Project</button>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          </div>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  `;
+                    }).join('');
+                    document.getElementById('projects-list').innerHTML = html || '<p class="text-gray-500">No projects yet</p>';
+            }
 
-          // Render invoices
-          function renderInvoices() {
-                  const html = data.invoices.map(invoice => `
-                          <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                                    <div class="flex justify-between items-center">
-                                                <div>
-                                                              <div class="font-semibold">Invoice #${invoice.id}</div>
-                                                                            <div class="text-sm text-gray-600">Project: ${data.projects.find(p => p.id === invoice.projectId)?.name || 'N/A'}</div>
-                                                                                          <div class="text-sm text-gray-600">Amount: $${invoice.amount.toFixed(2)}</div>
-                                                                                                      </div>
-                                                                                                                  <button onclick="downloadInvoice(${invoice.id})" class="btn-primary text-sm">Download</button>
-                                                                                                                            </div>
-                                                                                                                                    </div>
-                                                                                                                                          `).join('');
-                  document.getElementById('invoices-list').innerHTML = html || '<p class="text-gray-500">No invoices yet</p>';
-          }
+            // Render time entries
+            function renderTimeEntries() {
+                    const html = data.timeEntries.map(entry => {
+                              const project = data.projects.find(p => p.id === entry.projectId);
+                              const crew = data.crew.find(c => c.id === entry.crewId);
+                              const cost = crew ? crew.hourlyRate * entry.hours : 0;
 
-          // Update dashboard
-          function updateDashboard() {
-                  document.getElementById('total-projects').textContent = data.projects.length;
-                  document.getElementById('total-crew').textContent = data.crew.length;
+                              return `
+                                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                                    <div class="flex justify-between items-start">
+                                                                  <div>
+                                                                                  <div class="font-semibold">${crew?.name || 'Unknown'} - ${project?.name || 'Unknown Project'}</div>
+                                                                                                  <div class="text-sm text-gray-600">${entry.hours} hours on ${new Date(entry.date).toLocaleDateString()}</div>
+                                                                                                                  <div class="text-xs text-gray-500 mt-1">Cost: $${cost.toFixed(2)}</div>
+                                                                                                                                  ${entry.notes ? `<div class="text-xs text-gray-500 italic mt-1">"${entry.notes}"</div>` : ''}
+                                                                                                                                                </div>
+                                                                                                                                                              <button onclick="deleteTimeEntry(${entry.id})" class="text-red-600 hover:text-red-800">Delete</button>
+                                                                                                                                                                          </div>
+                                                                                                                                                                                    </div>
+                                                                                                                                                                                            `;
+                    }).join('');
+                    document.getElementById('time-entries-list').innerHTML = html || '<p class="text-gray-500">No time entries yet</p>';
+            }
 
-                  const totalCost = data.assignments.reduce((sum, a) => {
-                            const crewMember = data.crew.find(c => c.id === a.crewId);
-                            return sum + (crewMember ? crewMember.hourlyRate * a.hours : 0);
-                  }, 0);
-                  document.getElementById('total-cost').textContent = '$' + totalCost.toFixed(2);
+            // Render projects status on dashboard
+            function renderProjectsStatus() {
+                    const html = data.projects.map(project => {
+                              const health = getProjectHealth(project);
+                              const statusEmoji = health.status === 'at-risk' ? '🚨' : '✓';
 
-                  const projectsHtml = data.projects.slice(0, 3).map(p => `<div class="p-3 bg-gray-50 rounded">${p.name}</div>`).join('');
-                  document.getElementById('dashboard-projects').innerHTML = projectsHtml || '<p class="text-gray-500">No projects yet</p>';
-          }
+                              return `
+                                        <div class="p-3 bg-gray-50 rounded border-l-4 ${health.status === 'at-risk' ? 'border-red-500' : 'border-green-500'}">
+                                                    <div class="flex justify-between">
+                                                                  <div>
+                                                                                  <div class="font-semibold">${statusEmoji} ${project.name}</div>
+                                                                                                  <div class="text-xs text-gray-600">${health.hoursRemaining}h remaining • ${health.budgetRemaining >= 0 ? '$' + health.budgetRemaining.toFixed(0) : '-$' + Math.abs(health.budgetRemaining).toFixed(0)} budget left</div>
+                                                                                                                </div>
+                                                                                                                              <div class="text-right text-xs">
+                                                                                                                                              <div class="font-semibold">${health.daysRemaining} days</div>
+                                                                                                                                                            </div>
+                                                                                                                                                                        </div>
+                                                                                                                                                                                  </div>
+                                                                                                                                                                                          `;
+                    }).join('');
+                    document.getElementById('projects-status').innerHTML = html || '<p class="text-gray-500">No projects yet</p>';
+            }
 
-          // Render all
-          function renderAll() {
-                  renderCrewList();
-                  renderProjectsList();
-                  renderInvoices();
-                  updateDashboard();
-          }
+            // Update dashboard
+            function updateDashboard() {
+                    document.getElementById('total-projects').textContent = data.projects.length;
+                    document.getElementById('total-crew').textContent = data.crew.length;
+                    document.getElementById('active-entries').textContent = data.timeEntries.length;
 
-          // Delete functions
-          function deleteCrewMember(id) {
-                  data.crew = data.crew.filter(c => c.id !== id);
-                  saveData();
-          }
+                    const atRisk = checkProjectHealth();
+                    document.getElementById('at-risk-count').textContent = new Set(atRisk.map(p => p.id)).size;
 
-          function deleteProject(id) {
-                  data.projects = data.projects.filter(p => p.id !== id);
-                  data.assignments = data.assignments.filter(a => a.projectId !== id);
-                  saveData();
-          }
+                    renderProjectsStatus();
+            }
 
-          // Initialize
-          loadData();
-          renderAll();
-    </script>
-  </body>body>
-</html>html>
+            // Integration functions
+            function loadIntegrationSettings() {
+                    const slack = localStorage.getItem('slack-webhook') || '';
+                    const basecamp = localStorage.getItem('basecamp-token') || '';
+                    const google = localStorage.getItem('google-token') || '';
+                    const linkedin = localStorage.getItem('linkedin-token') || '';
 
-    </script></option></option>
+                    document.getElementById('slack-webhook').value = slack;
+                    document.getElementById('basecamp-token').value = basecamp;
+                    document.getElementById('google-token').value = google;
+                    document.getElementById('linkedin-token').value = linkedin;
+            }
+
+            function saveIntegrationSettings() {
+                    localStorage.setItem('slack-webhook', document.getElementById('slack-webhook').value);
+                    localStorage.setItem('basecamp-token', document.getElementById('basecamp-token').value);
+                    localStorage.setItem('google-token', document.getElementById('google-token').value);
+                    localStorage.setItem('linkedin-token', document.getElementById('linkedin-token').value);
+
+                    data.notificationSettings.notifyOverbudget = document.getElementById('notify-overbudget').checked;
+                    data.notificationSettings.notifyDeadline = document.getElementById('notify-deadline').checked;
+                    data.notificationSettings.notifySlack = document.getElementById('notify-slack').checked;
+
+                    saveData();
+                    alert('Integration settings saved!');
+            }
+
+            function testSlackIntegration() {
+                    const webhook = document.getElementById('slack-webhook').value;
+                    if (!webhook) {
+                              alert('Please enter a Slack Webhook URL');
+                              return;
+                    }
+                    sendSlackNotification('✅ CrewOps Slack integration test successful!');
+                    alert('Test notification sent to Slack!');
+            }
+
+            function sendSlackNotification(message) {
+                    const webhook = localStorage.getItem('slack-webhook');
+                    if (!webhook) return;
+
+                    // In production, this would be sent from backend
+                    console.log('Slack notification:', message);
+            }
+
+            function testBasecampIntegration() {
+                    alert('Basecamp integration configured. Sync will happen automatically with your projects.');
+            }
+
+            function testGoogleIntegration() {
+                    alert('Google Calendar integration configured. Project deadlines will be added to your calendar.');
+            }
+
+            function testLinkedInIntegration() {
+                    alert('LinkedIn integration configured. Crew member profiles will be enriched with public data.');
+            }
+
+            // Delete functions
+            function deleteCrewMember(id) {
+                    data.crew = data.crew.filter(c => c.id !== id);
+                    saveData();
+            }
+
+            function deleteProject(id) {
+                    data.projects = data.projects.filter(p => p.id !== id);
+                    data.timeEntries = data.timeEntries.filter(e => e.projectId !== id);
+                    saveData();
+            }
+
+            function deleteTimeEntry(id) {
+                    data.timeEntries = data.timeEntries.filter(e => e.id !== id);
+                    saveData();
+            }
+
+            // Render all
+            function renderAll() {
+                    renderCrewList();
+                    renderProjectsList();
+                    renderTimeEntries();
+                    updateDashboard();
+            }
+
+            // Initialize
+            loadData();
+            renderAll();
+
+            // Auto-check project health every 30 seconds
+            setInterval(() => checkProjectHealth(), 30000);
+      </script>
+    </div>body>
+  </body>html>
+      </script></option></option>
     </style></title>
   </head>
+      

@@ -1,239 +1,162 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
   <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>CrewOps - Production Crew Management</title>
-      <style>
-                * { margin: 0; padding: 0; box-sizing: border-box; }
-                body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; }
-                header { background: white; padding: 20px; border-bottom: 1px solid #ddd; }
-                h1 { font-size: 28px; color: #333; margin-bottom: 5px; }
-                nav { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
-                button { padding: 10px 20px; border: none; border-radius: 6px; background: #0066cc; color: white; cursor: pointer; font-size: 14px; }
-                button:hover { background: #0052a3; }
-                .container { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
-                .section { display: none; }
-                .section.active { display: block; }
-                .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
-                .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-                .card h3 { font-size: 14px; color: #666; margin-bottom: 10px; }
-                .card .value { font-size: 32px; font-weight: bold; color: #0066cc; }
-                .form-group { margin-bottom: 15px; }
-                label { display: block; margin-bottom: 5px; font-weight: 500; color: #333; }
-                input, select { width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
-                .list-item { padding: 12px; background: #f9f9f9; border-radius: 4px; margin-bottom: 10px; border-left: 3px solid #0066cc; }
-                .empty { color: #999; font-style: italic; padding: 20px; text-align: center; }
-                h2 { font-size: 20px; margin: 20px 0 15px 0; color: #333; }
-            </style>
+      <title>CrewOps</title>
+    <style>
+          body { font-family: Arial, sans-serif; margin: 20px; }
+          button { padding: 10px 15px; background: #0066cc; color: white; border: none; border-radius: 4px; cursor: pointer; }
+          button:hover { background: #0052a3; }
+          .section { margin: 20px 0; padding: 20px; background: #f9f9f9; border-radius: 4px; }
+          .hidden { display: none; }
+        </style>
   </head>
   <body>
-        <header>
-                  <h1>⚡ CrewOps - Production Crew Management</h1>
-                <nav>
-                              <button onclick="showTab('dash')">Dashboard</button>button>
-                              <button onclick="showTab('crew')">Crew</button>button>
-                              <button onclick="showTab('projects')">Projects</button>button>
-                              <button onclick="showTab('time')">Tracking</button>button>
-                              <button onclick="showTab('integrations')">Integrations</button>button>
-                </nav>
-        </header>
+      <h1>CrewOps - Production Crew Management</h1>
+    
+    <nav>
+          <button onclick="show('dash')">Dashboard</button>button>
+          <button onclick="show('crew')">Crew</button>button>
+          <button onclick="show('projects')">Projects</button>button>
+          <button onclick="show('time')">Tracking</button>button>
+          <button onclick="show('integrations')">Integrations</button>button>
+    </nav>
 
-        <div class="container">
-                  <!-- Dashboard Tab -->
-                  <div id="dash" class="section active">
-                                <h2>Dashboard</h2>
-                                <div class="dashboard">
-                                                  <div class="card">
-                                                                        <h3>Active Projects</h3>
-                                                                        <div class="value" id="mp">0</div>div>
-                                                  </div>div>
-                                                  <div class="card">
-                                                                        <h3>Total Crew</h3>
-                                                                        <div class="value" id="mc">0</div>div>
-                                                  </div>div>
-                                                  <div class="card">
-                                                                        <h3>Hours Logged</h3>
-                                                                        <div class="value" id="mh">0.0</div>div>
-                                                  </div>div>
-                                                  <div class="card">
-                                                                        <h3>Budget Used</h3>
-                                                                        <div class="value" id="mb">$0.00</div>div>
-                                                  </div>div>
-                                </div>div>
-                                <h2>Recent Projects</h2>
-                                <div id="proj-list" class="empty">No projects yet. Create one to get started!</div>div>
-                  </div>div>
-
-                  <!-- Crew Tab -->
-                  <div id="crew" class="section">
-                                <h2>Crew Management</h2>
-                                <button onclick="addCrewForm()">Add Crew Member</button>button>
-                                <div id="crew-list" class="empty">No crew members yet.</div>div>
-                  </div>div>
-
-                  <!-- Projects Tab -->
-                  <div id="projects" class="section">
-                                <h2>Projects</h2>
-                                <button onclick="addProjectForm()">New Project</button>button>
-                                <div id="proj-list2" class="empty">No projects yet.</div>div>
-                  </div>div>
-
-                  <!-- Time Tracking Tab -->
-                  <div id="time" class="section">
-                                <h2>Time Tracking</h2>
-                                <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                                                  <div class="form-group">
-                                                                        <label>Crew Member</label>
-                                                                      <select id="tc"></select>select>
-                                                  </div>div>
-                                                <div class="form-group">
-                                                                    <label>Project</label>
-                                                                    <select id="tp"></select>select>
-                                                </div>div>
-                                                <div class="form-group">
-                                                                    <label>Date</label>
-                                                                    <input type="date" id="td">
-                                                </div>div>
-                                                <div class="form-group">
-                                                                    <label>Hours</label>
-                                                                    <input type="number" id="th" placeholder="0.0" min="0" step="0.5">
-                                                </div>div>
-                                                <button onclick="logTime()">Log Time</button>button>
-                                </div>div>
-                              <h3>Time Entries</h3>
-                              <div id="time-list" class="empty">No time entries yet.</div>div>
-                  </div>div>
-        
-                <!-- Integrations Tab -->
-                <div id="integrations" class="section">
-                            <h2>Platform Integrations</h2>
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-                                            <div class="card">
-                                                                <h3>Slack</h3>
-                                                                <div class="form-group">
-                                                                                        <input type="text" id="slack" placeholder="Webhook URL">
-                                                                </div>div>
-                                                                <button onclick="save('slack')">Save</button>button>
-                                            </div>div>
-                                            <div class="card">
-                                                                <h3>Basecamp</h3>
-                                                                <div class="form-group">
-                                                                                        <input type="text" id="basecamp" placeholder="API Token">
-                                                                </div>div>
-                                                                <button onclick="save('basecamp')">Save</button>button>
-                                            </div>div>
-                                            <div class="card">
-                                                                <h3>Google Calendar</h3>
-                                                                <div class="form-group">
-                                                                                        <input type="text" id="google" placeholder="API Token">
-                                                                </div>div>
-                                                                <button onclick="save('google')">Save</button>button>
-                                            </div>div>
-                                            <div class="card">
-                                                                <h3>LinkedIn</h3>
-                                                                <div class="form-group">
-                                                                                        <input type="text" id="linkedin" placeholder="API Token">
-                                                                </div>div>
-                                                                <button onclick="save('linkedin')">Save</button>button>
-                                            </div>div>
-                            </div>div>
-                </div>div>
-        </div>div>
+      <div id="dash" class="section">
+            <h2>Dashboard</h2>
+            <p>Active Projects: <strong id="projects-count">0</strong>strong></p>
+          <p>Total Crew: <strong id="crew-count">0</strong>strong></p>
+          <p>Hours Logged: <strong id="hours-count">0.0</strong>strong></p>
+          <p>Budget Used: <strong id="budget-count">$0.00</strong>strong></p>
+      </div>div>
   
-      <script>
-                let data = {crew: [], projects: [], time: [], integrations: {}};
+    <div id="crew" class="section hidden">
+        <h2>Crew Management</h2>
+        <button onclick="addCrew()">Add Crew Member</button>button>
+        <div id="crew-list"><p>No crew members yet.</p></div>div>
+    </div>div>
+  
+    <div id="projects" class="section hidden">
+        <h2>Projects</h2>
+        <button onclick="addProject()">New Project</button>button>
+        <div id="projects-list"><p>No projects yet.</p></div>div>
+    </div>div>
+  
+    <div id="time" class="section hidden">
+        <h2>Time Tracking</h2>
+        <p><label>Crew: <select id="crew-select"></select>select></label></p>
+        <p><label>Project: <select id="project-select"></select>select></label></p>
+        <p><label>Date: <input type="date" id="date-input"></label>label></p>
+        <p><label>Hours: <input type="number" id="hours-input" min="0" step="0.5"></label></p>
+        <button onclick="logTime()">Log Time</button>button>
+        <div id="time-list"><p>No entries yet.</p></div>div>
+    </div>div>
+  
+    <div id="integrations" class="section hidden">
+        <h2>Platform Integrations</h2>
+        <p><label>Slack: <input type="text" id="slack" placeholder="Webhook URL"></label> <button onclick="saveIntegration('slack')">Save</button>button></p>
+        <p><label>Basecamp: <input type="text" id="basecamp" placeholder="API Token"></label>label> <button onclick="saveIntegration('basecamp')">Save</button>button></p>
+        <p><label>Google: <input type="text" id="google" placeholder="API Token"></label> <button onclick="saveIntegration('google')">Save</button>button></p>
+        <p><label>LinkedIn: <input type="text" id="linkedin" placeholder="API Token"></label> <button onclick="saveIntegration('linkedin')">Save</button>button></p>
+    </div>div>
+  
+    <script>
+          let data = {crew: [], projects: [], time: []};
 
-                function showTab(tab) {
-                              document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
-                              document.getElementById(tab).classList.add('active');
-                }
+          function show(id) {
+                  document.querySelectorAll('.section').forEach(el => el.classList.add('hidden'));
+                  document.getElementById(id).classList.remove('hidden');
+          }
 
-                function addCrewForm() {
-                              let name = prompt('Crew name:');
-                              if (!name) return;
-                              let role = prompt('Role:');
-                              if (!role) return;
-                              let rate = prompt('Hourly rate:');
-                              data.crew.push({id: Date.now(), name, role, rate: parseFloat(rate) || 0});
-                              saveData();
-                              updateAll();
-                }
+          function addCrew() {
+                  let name = prompt('Crew name:');
+                  if (!name) return;
+                  let role = prompt('Role:');
+                  let rate = prompt('Hourly rate:');
+                  data.crew.push({name, role, rate: parseFloat(rate) || 0});
+                  save();
+                  update();
+          }
 
-                function addProjectForm() {
-                              let name = prompt('Project name:');
-                              if (!name) return;
-                              let budget = prompt('Budget:');
-                              data.projects.push({id: Date.now(), name, budget: parseFloat(budget) || 0});
-                              saveData();
-                              updateAll();
-                }
+          function addProject() {
+                  let name = prompt('Project name:');
+                  if (!name) return;
+                  let budget = prompt('Budget:');
+                  data.projects.push({name, budget: parseFloat(budget) || 0});
+                  save();
+                  update();
+          }
 
-                function logTime() {
-                              let crew = document.getElementById('tc').value;
-                              let proj = document.getElementById('tp').value;
-                              let date = document.getElementById('td').value;
-                              let hours = parseFloat(document.getElementById('th').value);
-                              if (!crew || !proj || !date || !hours) {alert('Fill all fields'); return;}
-                              let crewData = data.crew.find(x => x.id == crew);
-                              let projData = data.projects.find(x => x.id == proj);
-                              data.time.push({crew: crewData.name, project: projData.name, date, hours, cost: hours * crewData.rate});
-                              saveData();
-                              document.getElementById('th').value = '';
-                              updateAll();
-                }
+          function logTime() {
+                  let crew = document.getElementById('crew-select').value;
+                  let proj = document.getElementById('project-select').value;
+                  let date = document.getElementById('date-input').value;
+                  let hours = parseFloat(document.getElementById('hours-input').value);
+                  if (!crew || !proj || !date || !hours) {alert('Fill all fields'); return;}
+                  data.time.push({crew, proj, date, hours});
+                  save();
+                  document.getElementById('hours-input').value = '';
+                  update();
+          }
 
-                function save(type) {
-                              let val = document.getElementById(type).value;
-                              if (val) {
-                                                data.integrations[type] = val;
-                                                saveData();
-                                                alert('Saved!');
-                              }
-                }
+          function saveIntegration(type) {
+                  let val = document.getElementById(type).value;
+                  if (val) {
+                            if (!data.integrations) data.integrations = {};
+                            data.integrations[type] = val;
+                            save();
+                            alert('Saved!');
+                  }
+          }
 
-                function saveData() {
-                              localStorage.setItem('crewops', JSON.stringify(data));
-                }
+          function save() {
+                  localStorage.setItem('crewops', JSON.stringify(data));
+          }
 
-                function loadData() {
-                              let saved = localStorage.getItem('crewops');
-                              if (saved) data = JSON.parse(saved);
-                }
+          function load() {
+                  let saved = localStorage.getItem('crewops');
+                  if (saved) data = JSON.parse(saved);
+          }
 
-                function updateAll() {
-                              document.getElementById('mp').textContent = data.projects.length;
-                              document.getElementById('mc').textContent = data.crew.length;
-                              let hours = data.time.reduce((sum, t) => sum + t.hours, 0);
-                              document.getElementById('mh').textContent = hours.toFixed(1);
-                              let cost = data.time.reduce((sum, t) => sum + t.cost, 0);
-                              document.getElementById('mb').textContent = '$' + cost.toFixed(2);
+          function update() {
+                  document.getElementById('projects-count').textContent = data.projects.length;
+                  document.getElementById('crew-count').textContent = data.crew.length;
+                  let hours = data.time.reduce((s, t) => s + (t.hours || 0), 0);
+                  document.getElementById('hours-count').textContent = hours.toFixed(1);
+                  let cost = 0;
+                  data.time.forEach(t => {
+                            let crew = data.crew.find(c => c.name === t.crew);
+                            if (crew) cost += t.hours * crew.rate;
+                  });
+                  document.getElementById('budget-count').textContent = '$' + cost.toFixed(2);
 
-                              let crewList = document.getElementById('crew-list');
-                              crewList.innerHTML = data.crew.length ? data.crew.map(c => '<div class="list-item">' + c.name + ' (' + c.role + ') - $' + c.rate + '/hr</div>').join('') : '<div class="empty">No crew members yet.</div>';
+                  document.getElementById('crew-list').innerHTML = data.crew.length ? 
+                            data.crew.map(c => '<p>' + c.name + ' (' + c.role + ') - $' + c.rate + '/hr</p>').join('') :
+                            '<p>No crew members yet.</p>';
 
-                              let projList1 = document.getElementById('proj-list');
-                              projList1.innerHTML = data.projects.length ? data.projects.map(p => '<div class="list-item">' + p.name + ' - Budget: $' + p.budget + '</div>').join('') : '<div class="empty">No projects yet.</div>';
+                  document.getElementById('projects-list').innerHTML = data.projects.length ?
+                            data.projects.map(p => '<p>' + p.name + ' - $' + p.budget + '</p>').join('') :
+                            '<p>No projects yet.</p>';
 
-                              let projList2 = document.getElementById('proj-list2');
-                              projList2.innerHTML = data.projects.length ? data.projects.map(p => '<div class="list-item">' + p.name + ' - Budget: $' + p.budget + '</div>').join('') : '<div class="empty">No projects yet.</div>';
+                  document.getElementById('time-list').innerHTML = data.time.length ?
+                            data.time.map(t => '<p>' + t.crew + ' on ' + t.proj + ' (' + t.hours + 'hrs)</p>').join('') :
+                            '<p>No entries yet.</p>';
 
-                              let timeList = document.getElementById('time-list');
-                              timeList.innerHTML = data.time.length ? data.time.map(t => '<div class="list-item">' + t.crew + ' on ' + t.project + ' (' + t.hours + 'hrs) = $' + t.cost.toFixed(2) + '</div>').join('') : '<div class="empty">No time entries yet.</div>';
+                  document.getElementById('crew-select').innerHTML = '<option>Select</option>' + 
+                            data.crew.map(c => '<option>' + c.name + '</option>').join('');
 
-                              document.getElementById('tc').innerHTML = '<option>Select</option>' + data.crew.map(c => '<option value="' + c.id + '">' + c.name + '</option>').join('');
-                              document.getElementById('tp').innerHTML = '<option>Select</option>' + data.projects.map(p => '<option value="' + p.id + '">' + p.name + '</option>').join('');
-                }
+                  document.getElementById('project-select').innerHTML = '<option>Select</option>' +
+                            data.projects.map(p => '<option>' + p.name + '</option>').join('');
+          }
 
-                document.getElementById('td').valueAsDate = new Date();
-                loadData();
-                updateAll();
-      </script>
+          document.getElementById('date-input').valueAsDate = new Date();
+          load();
+          update();
+    </script>
   </body>
-</html>html>
-      </script></label></label>
-                </nav></h1>
-        </header>
+</html>
+    </script></label></label></p></p></label></label></p></p></label></label></p></p>
+    </nav></h1>
   </body>
-      </style></title>
+    </style></title>
   </head>
+</html>

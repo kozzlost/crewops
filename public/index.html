@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>CrewOps - Production Crew Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+          .fade-in { animation: fadeIn 0.3s ease-in; }
+          @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+          .tab-active { border-bottom: 3px solid #3B82F6; color: #3B82F6; }
+          .btn-primary { @apply bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition; }
+          .btn-secondary { @apply bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold transition; }
+          .input-field { @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500; }
+          .card { @apply bg-white rounded-lg shadow-lg p-6 mb-6; }
+        </style>
+  </head>
+  <body class="bg-gray-100">
+      <div id="app" class="min-h-screen">
+            <!-- Navigation -->
+            <nav class="bg-blue-600 text-white shadow-lg">
+                    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+                              <div class="text-2xl font-bold">⚡ CrewOps</div>div>
+                              <div class="flex gap-4">
+                                          <button onclick="switchTab('dashboard')" class="hover:bg-blue-700 px-4 py-2 rounded">Dashboard</button>button>
+                                          <button onclick="switchTab('crew')" class="hover:bg-blue-700 px-4 py-2 rounded">Crew</button>button>
+                                          <button onclick="switchTab('projects')" class="hover:bg-blue-700 px-4 py-2 rounded">Projects</button>button>
+                                          <button onclick="switchTab('invoices')" class="hover:bg-blue-700 px-4 py-2 rounded">Invoices</button>button>
+                              </div>div>
+                    </div>div>
+            </nav>nav>
+
+            <!-- Dashboard Tab -->
+            <div id="dashboard-tab" class="tab-content">
+                    <div class="max-w-7xl mx-auto p-6">
+                              <h1 class="text-3xl font-bold mb-6">Dashboard</h1>h1>
+
+                              <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                                          <div class="card">
+                                                        <div class="text-gray-600 text-sm">Total Projects</div>div>
+                                                        <div id="total-projects" class="text-4xl font-bold text-blue-600">0</div>div>
+                                          </div>div>
+                                          <div class="card">
+                                                        <div class="text-gray-600 text-sm">Total Crew</div>div>
+                                                        <div id="total-crew" class="text-4xl font-bold text-green-600">0</div>div>
+                                          </div>div>
+                                          <div class="card">
+                                                        <div class="text-gray-600 text-sm">Total Labor Cost</div>div>
+                                                        <div id="total-cost" class="text-4xl font-bold text-purple-600">$0</div>div>
+                                          </div>div>
+                              </div>div>
+
+                              <div class="card">
+                                          <h2 class="text-xl font-bold mb-4">Active Projects</h2>h2>
+                                          <div id="dashboard-projects" class="space-y-4"></div>div>
+                              </div>div>
+                    </div>div>
+            </div>div>
+
+            <!-- Crew Tab -->
+            <div id="crew-tab" class="tab-content hidden">
+                    <div class="max-w-7xl mx-auto p-6">
+                              <div class="flex justify-between items-center mb-6">
+                                          <h1 class="text-3xl font-bold">Crew Management</h1>h1>
+                                          <button onclick="showAddCrewModal()" class="btn-primary">+ Add Crew Member</button>button>
+                              </div>div>
+
+                              <div class="card">
+                                          <div id="crew-list" class="space-y-3"></div>div>
+                              </div>div>
+                    </div>div>
+            </div>div>
+
+            <!-- Projects Tab -->
+            <div id="projects-tab" class="tab-content hidden">
+                    <div class="max-w-7xl mx-auto p-6">
+                              <div class="flex justify-between items-center mb-6">
+                                          <h1 class="text-3xl font-bold">Projects</h1>h1>
+                                          <button onclick="showAddProjectModal()" class="btn-primary">+ New Project</button>button>
+                              </div>div>
+
+                              <div class="card">
+                                          <div id="projects-list" class="space-y-4"></div>div>
+                              </div>div>
+                    </div>div>
+            </div>div>
+
+            <!-- Invoices Tab -->
+            <div id="invoices-tab" class="tab-content hidden">
+                    <div class="max-w-7xl mx-auto p-6">
+                              <h1 class="text-3xl font-bold mb-6">Invoices</h1>h1>
+                              <div class="card">
+                                          <div id="invoices-list" class="space-y-4"></div>div>
+                              </div>div>
+                    </div>div>
+            </div>div>
+      </div>div>
+
+      <!-- Add Crew Modal -->
+      <div id="add-crew-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg p-8 w-96">
+                    <h2 class="text-2xl font-bold mb-4">Add Crew Member</h2>h2>
+                    <input type="text" id="crew-name" placeholder="Name" class="input-field mb-3">
+                    <select id="crew-role" class="input-field mb-3">
+                              <option>-- Select Role --</option>
+                            <option>DP</option>
+                            <option>Gaffer</option>
+                            <option>Producer</option>
+                            <option>PA</option>
+                            <option>Grip</option>
+                            <option>Sound Tech</option>
+                            <option>Camera Op</option>
+                    </select>select>
+                  <input type="number" id="crew-rate" placeholder="Hourly Rate ($)" class="input-field mb-3">
+                  <textarea id="crew-skills" placeholder="Skills (comma separated)" class="input-field mb-4" rows="3"></textarea>
+                  <div class="flex gap-3">
+                          <button onclick="addCrewMember()" class="btn-primary flex-1">Add</button>button>
+                          <button onclick="closeModals()" class="btn-secondary flex-1">Cancel</button>button>
+                  </div>div>
+            </div>div>
+      </div>div>
+  
+    <!-- Add Project Modal -->
+    <div id="add-project-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-8 w-96">
+              <h2 class="text-2xl font-bold mb-4">New Project</h2>h2>
+              <input type="text" id="project-name" placeholder="Project Name" class="input-field mb-3">
+              <input type="date" id="project-date" class="input-field mb-3">
+              <input type="number" id="project-budget" placeholder="Budget ($)" class="input-field mb-3">
+              <textarea id="project-desc" placeholder="Description" class="input-field mb-4" rows="3"></textarea>
+              <div class="flex gap-3">
+                      <button onclick="addProject()" class="btn-primary flex-1">Create</button>button>
+                      <button onclick="closeModals()" class="btn-secondary flex-1">Cancel</button>button>
+              </div>div>
+        </div>div>
+    </div>div>
+  
+    <script>
+          // Data store
+          let data = {
+                  crew: [],
+                  projects: [],
+                  assignments: [],
+                  invoices: []
+          };
+
+          // Load from localStorage
+          function loadData() {
+                  const saved = localStorage.getItem('crewops-data');
+                  if (saved) data = JSON.parse(saved);
+          }
+
+          // Save to localStorage
+          function saveData() {
+                  localStorage.setItem('crewops-data', JSON.stringify(data));
+                  renderAll();
+          }
+
+          // Tab switching
+          function switchTab(tab) {
+                  document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+                  document.getElementById(tab + '-tab').classList.remove('hidden');
+                  renderAll();
+          }
+
+          // Modals
+          function showAddCrewModal() {
+                  document.getElementById('add-crew-modal').classList.remove('hidden');
+          }
+
+          function showAddProjectModal() {
+                  document.getElementById('add-project-modal').classList.remove('hidden');
+          }
+
+          function closeModals() {
+                  document.getElementById('add-crew-modal').classList.add('hidden');
+                  document.getElementById('add-project-modal').classList.add('hidden');
+          }
+
+          // Add crew member
+          function addCrewMember() {
+                  const name = document.getElementById('crew-name').value;
+                  const role = document.getElementById('crew-role').value;
+                  const rate = parseFloat(document.getElementById('crew-rate').value);
+                  const skills = document.getElementById('crew-skills').value;
+
+                  if (name && role !== '-- Select Role --' && rate > 0) {
+                            data.crew.push({
+                                        id: Date.now(),
+                                        name,
+                                        role,
+                                        hourlyRate: rate,
+                                        skills: skills.split(',').map(s => s.trim())
+                            });
+                            saveData();
+                            closeModals();
+                            document.getElementById('crew-name').value = '';
+                            document.getElementById('crew-role').value = '-- Select Role --';
+                            document.getElementById('crew-rate').value = '';
+                            document.getElementById('crew-skills').value = '';
+                  } else {
+                            alert('Please fill all required fields');
+                  }
+          }
+
+          // Add project
+          function addProject() {
+                  const name = document.getElementById('project-name').value;
+                  const date = document.getElementById('project-date').value;
+                  const budget = parseFloat(document.getElementById('project-budget').value);
+                  const desc = document.getElementById('project-desc').value;
+
+                  if (name && date && budget > 0) {
+                            data.projects.push({
+                                        id: Date.now(),
+                                        name,
+                                        date,
+                                        budget,
+                                        description: desc,
+                                        createdAt: new Date().toISOString()
+                            });
+                            saveData();
+                            closeModals();
+                            document.getElementById('project-name').value = '';
+                            document.getElementById('project-date').value = '';
+                            document.getElementById('project-budget').value = '';
+                            document.getElementById('project-desc').value = '';
+                  } else {
+                            alert('Please fill all required fields');
+                  }
+          }
+
+          // Render crew list
+          function renderCrewList() {
+                  const html = data.crew.map(member => `
+                          <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 flex justify-between items-center">
+                                    <div>
+                                                <div class="font-semibold">${member.name}</div>
+                                                            <div class="text-sm text-gray-600">${member.role} • $${member.hourlyRate}/hr</div>
+                                                                        <div class="text-xs text-gray-500 mt-1">${member.skills.join(', ')}</div>
+                                                                                  </div>
+                                                                                            <button onclick="deleteCrewMember(${member.id})" class="text-red-600 hover:text-red-800 font-semibold">Delete</button>
+                                                                                                    </div>
+                                                                                                          `).join('');
+                  document.getElementById('crew-list').innerHTML = html || '<p class="text-gray-500">No crew members yet</p>';
+          }
+
+          // Render projects list
+          function renderProjectsList() {
+                  const html = data.projects.map(project => {
+                            const totalCost = data.assignments.filter(a => a.projectId === project.id).reduce((sum, a) => {
+                                        const crewMember = data.crew.find(c => c.id === a.crewId);
+                                        return sum + (crewMember ? crewMember.hourlyRate * a.hours : 0);
+                            }, 0);
+                            return `
+                                      <div class="bg-gradient-to-r from-blue-50 to-purple-50 p-5 rounded-lg border border-blue-200">
+                                                  <div class="flex justify-between items-start mb-3">
+                                                                <div>
+                                                                                <h3 class="text-lg font-bold text-blue-900">${project.name}</h3>
+                                                                                                <p class="text-sm text-gray-600">${new Date(project.date).toLocaleDateString()}</p>
+                                                                                                              </div>
+                                                                                                                            <button onclick="deleteProject(${project.id})" class="text-red-600 hover:text-red-800">×</button>
+                                                                                                                                        </div>
+                                                                                                                                                    <div class="grid grid-cols-3 gap-4 mb-3">
+                                                                                                                                                                  <div>
+                                                                                                                                                                                  <div class="text-xs text-gray-600">Budget</div>
+                                                                                                                                                                                                  <div class="text-lg font-semibold text-blue-600">$${project.budget.toFixed(2)}</div>
+                                                                                                                                                                                                                </div>
+                                                                                                                                                                                                                              <div>
+                                                                                                                                                                                                                                              <div class="text-xs text-gray-600">Used</div>
+                                                                                                                                                                                                                                                              <div class="text-lg font-semibold text-purple-600">$${totalCost.toFixed(2)}</div>
+                                                                                                                                                                                                                                                                            </div>
+                                                                                                                                                                                                                                                                                          <div>
+                                                                                                                                                                                                                                                                                                          <div class="text-xs text-gray-600">Remaining</div>
+                                                                                                                                                                                                                                                                                                                          <div class="text-lg font-semibold ${(project.budget - totalCost) >= 0 ? 'text-green-600' : 'text-red-600'}">$${(project.budget - totalCost).toFixed(2)}</div>
+                                                                                                                                                                                                                                                                                                                                        </div>
+                                                                                                                                                                                                                                                                                                                                                    </div>
+                                                                                                                                                                                                                                                                                                                                                                <button onclick="showProjectDetails(${project.id})" class="btn-secondary w-full text-sm">Manage Crew</button>
+                                                                                                                                                                                                                                                                                                                                                                          </div>
+                                                                                                                                                                                                                                                                                                                                                                                  `;
+                  }).join('');
+                  document.getElementById('projects-list').innerHTML = html || '<p class="text-gray-500">No projects yet</p>';
+          }
+
+          // Render invoices
+          function renderInvoices() {
+                  const html = data.invoices.map(invoice => `
+                          <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                    <div class="flex justify-between items-center">
+                                                <div>
+                                                              <div class="font-semibold">Invoice #${invoice.id}</div>
+                                                                            <div class="text-sm text-gray-600">Project: ${data.projects.find(p => p.id === invoice.projectId)?.name || 'N/A'}</div>
+                                                                                          <div class="text-sm text-gray-600">Amount: $${invoice.amount.toFixed(2)}</div>
+                                                                                                      </div>
+                                                                                                                  <button onclick="downloadInvoice(${invoice.id})" class="btn-primary text-sm">Download</button>
+                                                                                                                            </div>
+                                                                                                                                    </div>
+                                                                                                                                          `).join('');
+                  document.getElementById('invoices-list').innerHTML = html || '<p class="text-gray-500">No invoices yet</p>';
+          }
+
+          // Update dashboard
+          function updateDashboard() {
+                  document.getElementById('total-projects').textContent = data.projects.length;
+                  document.getElementById('total-crew').textContent = data.crew.length;
+
+                  const totalCost = data.assignments.reduce((sum, a) => {
+                            const crewMember = data.crew.find(c => c.id === a.crewId);
+                            return sum + (crewMember ? crewMember.hourlyRate * a.hours : 0);
+                  }, 0);
+                  document.getElementById('total-cost').textContent = '$' + totalCost.toFixed(2);
+
+                  const projectsHtml = data.projects.slice(0, 3).map(p => `<div class="p-3 bg-gray-50 rounded">${p.name}</div>`).join('');
+                  document.getElementById('dashboard-projects').innerHTML = projectsHtml || '<p class="text-gray-500">No projects yet</p>';
+          }
+
+          // Render all
+          function renderAll() {
+                  renderCrewList();
+                  renderProjectsList();
+                  renderInvoices();
+                  updateDashboard();
+          }
+
+          // Delete functions
+          function deleteCrewMember(id) {
+                  data.crew = data.crew.filter(c => c.id !== id);
+                  saveData();
+          }
+
+          function deleteProject(id) {
+                  data.projects = data.projects.filter(p => p.id !== id);
+                  data.assignments = data.assignments.filter(a => a.projectId !== id);
+                  saveData();
+          }
+
+          // Initialize
+          loadData();
+          renderAll();
+    </script>
+  </body>body>
+</html>html>
+
+    </script></option></option>
+    </style></title>
+  </head>

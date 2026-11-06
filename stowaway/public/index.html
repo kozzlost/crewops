@@ -1,0 +1,648 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#121210">
+<meta name="description" content="A party game for 3 to 8 people waiting for a train. One passenger has no ticket. Find the stowaway from everyone's one-word clues.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Stowaway</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23121210'/%3E%3Cg fill='%23ffb21a'%3E%3Ccircle cx='9' cy='10' r='2.4'/%3E%3Ccircle cx='16' cy='10' r='2.4'/%3E%3Ccircle cx='23' cy='10' r='2.4'/%3E%3Ccircle cx='9' cy='17' r='2.4'/%3E%3Ccircle cx='23' cy='17' r='2.4'/%3E%3Ccircle cx='9' cy='24' r='2.4'/%3E%3Ccircle cx='16' cy='24' r='2.4'/%3E%3Ccircle cx='23' cy='24' r='2.4'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Doto:wght@700;900&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* Layout: one phone-width column styled as a station departure board; each screen is a stack of board panels above a yellow platform-edge strip */
+:root{
+  --night:#121210;
+  --board:#1c1b17;
+  --row:#26241f;
+  --line:#3a372f;
+  --amber:#ffb21a;
+  --amber-dim:#8f6a1c;
+  --paper:#f2ead8;
+  --ink:#1d1a14;
+  --fg:#efe7d4;
+  --muted:#a59d8b;
+  --stop:#ff6152;
+  --go:#5fd291;
+  --caution:#f3cd00;
+  --f-board:"Doto", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --f-body:"Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --step--1:.8125rem; --step-0:1rem; --step-1:1.1875rem; --step-2:1.5rem; --step-3:2.125rem; --step-4:3rem;
+  --r:8px;
+  color-scheme:dark;
+}
+html,body{background:var(--night);color:var(--fg)}
+body{font-family:var(--f-body);font-size:var(--step-0);line-height:1.5;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 40px;-webkit-tap-highlight-color:transparent}
+.wrap{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+#app{width:100%;margin:0;padding:0}
+[hidden]{display:none!important}
+h1,h2,h3{margin:0;text-wrap:balance;line-height:1.15}
+p{margin:0}
+button{font:inherit;color:inherit}
+.dot{font-family:var(--f-board);font-weight:900;color:var(--amber);letter-spacing:.06em;text-shadow:0 0 10px rgba(255,178,26,.35);text-transform:uppercase}
+.eyebrow{font-size:var(--step--1);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.muted{color:var(--muted)}
+.small{font-size:var(--step--1)}
+
+/* header */
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:14px 10px}
+.brand{font-size:var(--step-2);background:none;border:0;padding:0;cursor:pointer}
+.clock{background:var(--board);border:1px solid var(--line);border-radius:6px;padding:6px 10px;display:flex;flex-direction:column;align-items:flex-end;cursor:pointer;min-width:0}
+.clock .t{font-family:var(--f-board);font-weight:900;color:var(--amber);font-size:var(--step-1);line-height:1;letter-spacing:.06em;font-variant-numeric:tabular-nums}
+.clock .s{font-size:.6875rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.edge{height:12px;border-radius:2px;background-color:var(--caution);background-image:radial-gradient(circle,rgba(0,0,0,.32) 2px,transparent 2.6px);background-size:10px 10px;background-position:0 1px}
+.edge-note{font-size:.6875rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-align:center;margin-top:-10px}
+.train-pop{background:var(--board);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-wrap:wrap;gap:10px;align-items:end}
+.train-pop label{display:flex;flex-direction:column;gap:4px;flex:1 1 160px}
+
+/* panels */
+.board{background:var(--board);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.hero h1{font-size:clamp(2.4rem,13vw,4rem);line-height:.95}
+.hero p{max-width:60ch}
+.modes{display:grid;gap:12px}
+.mode{display:flex;flex-direction:column;gap:6px;text-align:left;background:var(--row);border:1px solid var(--line);border-radius:var(--r);padding:16px;cursor:pointer;position:relative}
+.mode:hover:not(:disabled){border-color:var(--amber-dim)}
+.mode:disabled{opacity:.6;cursor:not-allowed}
+.mode strong{font-size:var(--step-1)}
+.mode .k{font-family:var(--f-board);font-weight:900;color:var(--amber);letter-spacing:.08em;font-size:var(--step--1)}
+.chip{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;font-size:.75rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:4px;background:#2f2c25;color:var(--muted)}
+.chip.ok{color:var(--go);background:rgba(95,210,145,.12)}
+.chip.bad{color:var(--stop);background:rgba(255,97,82,.12)}
+.chip.amber{color:var(--amber);background:rgba(255,178,26,.12)}
+.chip::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+
+/* controls */
+.btn{appearance:none;border:1px solid transparent;border-radius:6px;padding:12px 16px;font-weight:700;cursor:pointer;min-height:48px;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-align:center}
+.btn.primary{background:var(--amber);color:var(--ink)}
+.btn.primary:hover:not(:disabled){filter:brightness(1.06)}
+.btn.ghost{background:transparent;border-color:var(--line);color:var(--fg)}
+.btn.ghost:hover:not(:disabled){border-color:var(--amber-dim)}
+.btn.danger{background:transparent;border-color:rgba(255,97,82,.5);color:var(--stop)}
+.btn.sm{min-height:36px;padding:6px 12px;font-size:var(--step--1)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.block{width:100%}
+.btn-row{display:flex;flex-wrap:wrap;gap:10px}
+.btn-row>.btn{flex:1 1 140px}
+:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+input[type=text],input[type=time]{width:100%;box-sizing:border-box;background:var(--night);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:12px;font:inherit;font-size:1.0625rem;min-height:48px}
+input[type=text]:focus,input[type=time]:focus{border-color:var(--amber);outline:none}
+.field{display:flex;gap:8px}
+.field input{flex:1;min-width:0}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{background:transparent;border:0;padding:8px 14px;cursor:pointer;font-weight:700;color:var(--muted)}
+.seg button[aria-pressed=true]{background:var(--amber);color:var(--ink)}
+
+/* rows (departure board lines) */
+.rows{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;background:var(--row);border-radius:5px;padding:10px 12px;min-height:44px}
+.row .nm{font-weight:700;min-width:0;overflow-wrap:anywhere}
+.row .nm small{font-weight:400;color:var(--muted)}
+.row .st{font-family:var(--f-board);font-weight:900;font-size:var(--step--1);letter-spacing:.08em;color:var(--muted);text-transform:uppercase;white-space:nowrap}
+.row.now{outline:1px solid var(--amber-dim);background:#2d2817}
+.row.now .st{color:var(--amber)}
+.row .clues{grid-column:1 / -1;display:flex;flex-wrap:wrap;gap:6px}
+.clue{font-family:var(--f-board);font-weight:900;color:var(--amber);font-size:var(--step-1);letter-spacing:.05em;text-transform:uppercase;background:#16150f;border-radius:4px;padding:2px 8px;overflow-wrap:anywhere}
+.clue.empty{color:#4b463a}
+.blink{animation:blink 1.1s steps(2,start) infinite}
+@keyframes blink{to{visibility:hidden}}
+
+/* ticket */
+.ticket{position:relative;border-radius:10px;min-height:190px;cursor:pointer;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:none;
+  background:radial-gradient(circle at 0 50%,var(--night) 11px,transparent 12px),radial-gradient(circle at 100% 50%,var(--night) 11px,transparent 12px),var(--paper);color:var(--ink)}
+.t-cover,.t-face{position:absolute;inset:0;padding:18px 24px;display:flex;flex-direction:column;justify-content:center;gap:6px;border-radius:10px}
+.t-cover{align-items:center;text-align:center;background:repeating-linear-gradient(135deg,#2a2720 0 10px,#24221c 10px 20px);border:1px dashed var(--amber-dim);color:var(--fg)}
+.t-cover .dot{font-size:var(--step-2)}
+.t-face{visibility:hidden}
+.ticket.open .t-face{visibility:visible}
+.ticket.open .t-cover{visibility:hidden}
+.t-top{display:flex;justify-content:space-between;gap:8px;font-size:.6875rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:#6b6252;border-bottom:1px dashed #b9ae96;padding-bottom:6px}
+.t-word{font-family:var(--f-board);font-weight:900;font-size:clamp(1.8rem,9vw,2.6rem);letter-spacing:.04em;text-transform:uppercase;line-height:1.05;overflow-wrap:anywhere;color:var(--ink)}
+.t-lab{font-size:.6875rem;letter-spacing:.14em;text-transform:uppercase;color:#6b6252;font-weight:700}
+.stamp{align-self:flex-start;border:3px solid #c2321f;color:#c2321f;font-family:var(--f-board);font-weight:900;font-size:var(--step-2);padding:2px 10px;border-radius:4px;transform:rotate(-4deg);letter-spacing:.06em}
+
+/* vote grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.pick{background:var(--row);border:1px solid var(--line);border-radius:6px;padding:12px;min-height:52px;font-weight:700;cursor:pointer;text-align:left;overflow-wrap:anywhere}
+.pick[aria-pressed=true]{background:var(--amber);color:var(--ink);border-color:var(--amber)}
+.pick.right{background:rgba(95,210,145,.18);border-color:var(--go)}
+.pick:disabled{cursor:default}
+
+/* result */
+.verdict{font-size:var(--step-4);line-height:1}
+.verdict.caught{color:var(--go);text-shadow:0 0 12px rgba(95,210,145,.35)}
+.verdict.escaped{color:var(--stop);text-shadow:0 0 12px rgba(255,97,82,.35)}
+.kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 14px}
+.kv dt{color:var(--muted);font-size:var(--step--1);text-transform:uppercase;letter-spacing:.1em;padding-top:2px}
+.kv dd{margin:0;font-weight:700;overflow-wrap:anywhere}
+.score{font-family:var(--f-board);font-weight:900;color:var(--amber);font-variant-numeric:tabular-nums;font-size:var(--step-1)}
+.plus{color:var(--go);font-weight:700;font-size:var(--step--1);margin-left:6px}
+.note{border-left:3px solid var(--amber-dim);padding:6px 0 6px 12px;color:var(--muted)}
+.note.err{border-color:var(--stop);color:var(--fg)}
+.big-timer{font-family:var(--f-board);font-weight:900;font-size:var(--step-4);color:var(--amber);text-align:center;font-variant-numeric:tabular-nums}
+details{background:var(--board);border:1px solid var(--line);border-radius:var(--r);padding:0 16px}
+details>summary{cursor:pointer;padding:14px 0;font-weight:700;list-style:none;display:flex;justify-content:space-between;align-items:center}
+details>summary::-webkit-details-marker{display:none}
+details>summary::after{content:"+";font-family:var(--f-board);font-weight:900;color:var(--amber);font-size:var(--step-1)}
+details[open]>summary::after{content:"\2212"}
+details .inner{padding-bottom:16px;display:flex;flex-direction:column;gap:10px}
+details ol,details ul{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px}
+.order{counter-reset:o;list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:6px}
+.order li{counter-increment:o;background:var(--row);border-radius:4px;padding:4px 10px;font-weight:700}
+.order li::before{content:counter(o) " ";font-family:var(--f-board);font-weight:900;color:var(--amber);margin-right:4px}
+@media (prefers-reduced-motion:reduce){.blink{animation:none}}
+</style>
+<style>
+html,body{margin:0;min-height:100%}
+body{padding-top:env(safe-area-inset-top,0px);padding-bottom:calc(40px + env(safe-area-inset-bottom,0px))}
+.roomcard{flex-direction:row;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.roomcard .code{font-size:var(--step-3);line-height:1;letter-spacing:.18em}
+.code-input{text-transform:uppercase;letter-spacing:.3em;font-family:var(--f-board)!important;font-weight:900;font-size:1.5rem!important;color:var(--amber)!important}
+.on{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--go);margin-right:6px;vertical-align:middle}
+.on.off{background:#4b463a}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--paper);color:var(--ink);font-weight:700;padding:10px 16px;border-radius:6px;box-shadow:0 6px 24px rgba(0,0,0,.4);z-index:20;max-width:calc(100vw - 32px)}
+.or{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:var(--step--1);text-transform:uppercase;letter-spacing:.12em}
+.or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <button class="brand dot" data-act="home" aria-label="Stowaway home">Stowaway</button>
+    <button class="clock" data-act="train" aria-label="Set your train time"><span class="t" id="clock-t">--:--</span><span class="s" id="clock-s">Set train time</span></button>
+  </header>
+  <div class="edge" aria-hidden="true"></div>
+  <form class="train-pop" id="train-pop" hidden>
+    <label for="train-time"><span class="eyebrow">Your train departs at</span><input type="time" id="train-time"></label>
+    <button class="btn primary sm" type="submit">Set</button>
+    <button class="btn ghost sm" type="button" data-act="train-clear">Clear</button>
+  </form>
+  <main id="app" class="wrap"></main>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script src="/engine.js"></script>
+<script>
+const {HIDDEN,norm,dealRound,deriveRound,scoreRound}=window.Stowaway;
+
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+const app=$("#app");
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function store(k,v){try{if(v===undefined)return JSON.parse(localStorage.getItem(k)||"null");if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,JSON.stringify(v))}catch(e){return null}}
+function rid(){return "p_"+Math.random().toString(36).slice(2,10)+Date.now().toString(36)}
+function oneWord(s){return String(s||"").trim().replace(/\s+/g," ")}
+let toastT=null;
+function toast(msg){const t=$("#toast");t.textContent=msg;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>{t.hidden=true},2600)}
+function roomFromHash(){const m=/^#([A-Za-z]{4})$/.exec(location.hash);return m?m[1].toUpperCase():null}
+function setHash(code){try{history.replaceState(null,"",code?"#"+code:location.pathname+location.search)}catch(e){location.hash=code||""}}
+
+/* ---------- state ---------- */
+let myId=store("sw.pid");if(!myId||!/^[A-Za-z0-9_-]{6,40}$/.test(myId)){myId=rid();store("sw.pid",myId)}
+const O={conn:"idle",ws:null,queue:[],retry:0,wakeT:null,room:null,uid:myId,mine:null,game:null,players:{},online:[],haveState:false,err:"",joinErr:""};
+const S={view:"home",reveal:false,pass:store("sw.pass")||newPass()};
+function newPass(){return {names:[],scores:{},step:"setup",round:0,used:[],lastStowaway:null,deal:null,idx:0,shown:false,accused:null,guess:null,timerEnd:null}}
+function savePass(){store("sw.pass",S.pass)}
+function go(v){S.view=v;S.reveal=false;store("sw.view",v);if(v==="online")connect();if(v!=="online")setHash(null);else if(O.room)setHash(O.room);render();window.scrollTo(0,0)}
+
+/* ---------- render with focus preservation ---------- */
+function render(){
+  const a=document.activeElement;const fid=a&&a.id&&app.contains(a)?a.id:null;
+  const vals={};app.querySelectorAll("input[id]").forEach(i=>vals[i.id]=i.value);
+  const sel=fid&&a.selectionStart!=null?[a.selectionStart,a.selectionEnd]:null;
+  app.innerHTML=S.view==="online"?viewOnline():S.view==="pass"?viewPass():viewHome();
+  Object.keys(vals).forEach(id=>{const el=document.getElementById(id);if(el)el.value=vals[id]});
+  if(fid){const el=document.getElementById(fid);if(el){el.focus({preventScroll:true});if(sel&&el.setSelectionRange)try{el.setSelectionRange(sel[0],sel[1])}catch(e){}}}
+}
+
+/* ---------- connection ---------- */
+function connect(){
+  if(O.ws&&(O.ws.readyState===0||O.ws.readyState===1))return;
+  O.conn="connecting";
+  clearTimeout(O.wakeT);O.wakeT=setTimeout(()=>{if(O.conn==="connecting"){O.conn="waking";render()}},3500);
+  let ws;
+  try{ws=new WebSocket((location.protocol==="https:"?"wss://":"ws://")+location.host+"/ws")}catch(e){O.conn="closed";render();return}
+  O.ws=ws;
+  ws.onopen=()=>{O.conn="open";O.retry=0;clearTimeout(O.wakeT);if(O.room)ws.send(JSON.stringify({t:"hello",room:O.room,pid:O.uid}));const q=O.queue;O.queue=[];q.forEach(m=>ws.send(JSON.stringify(m)));render()};
+  ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(x){return}onMsg(m)};
+  ws.onclose=()=>{if(O.ws!==ws)return;O.ws=null;O.conn="closed";render();const d=Math.min(15000,1000*Math.pow(2,O.retry++));setTimeout(()=>{if(S.view==="online"||O.room)connect()},d)};
+}
+function send(m){if(O.ws&&O.ws.readyState===1)O.ws.send(JSON.stringify(m));else{O.queue.push(m);connect()}}
+function onMsg(m){
+  if(m.t==="created"){joinRoom(m.room);return}
+  if(m.t==="state"){if(m.room!==O.room)return;O.game=m.game;O.players=Object.assign({},m.players||{});
+    if(O.mine){const srv=O.players[O.uid];if(!srv||(srv.rev||0)<O.mine.rev)O.players[O.uid]=O.mine;else O.mine=null}O.online=m.online||[];O.haveState=true;render();return}
+  if(m.t==="error"){
+    if(m.code==="no_room"){O.room=null;O.haveState=false;store("sw.room",null);setHash(null);O.joinErr=m.message}
+    else O.err=m.message;
+    render();
+  }
+}
+function joinRoom(code){
+  code=String(code||"").toUpperCase();
+  O.room=code;O.haveState=false;O.game=null;O.players={};O.mine=null;O.err="";O.joinErr="";
+  store("sw.room",code);
+  if(S.view!=="online"){S.view="online";store("sw.view","online")}
+  setHash(code);
+  if(O.ws&&O.ws.readyState===1)send({t:"hello",room:code,pid:O.uid});else connect();
+  render();
+}
+function leaveRoom(){O.room=null;O.haveState=false;O.game=null;O.players={};store("sw.room",null);setHash(null);render()}
+
+/* ---------- shared pieces ---------- */
+function rulesBlock(open){return `<details${open?" open":""}><summary>How to play</summary><div class="inner">
+<ol>
+<li>Everyone gets a ticket. Hold it to read it, and keep it hidden from your neighbours.</li>
+<li>Passengers' tickets all show the same secret <b>destination</b>. One player is the <b>stowaway</b>: their ticket shows only the category.</li>
+<li>Go around in order. Each player gives <b>one word</b> that hints at the destination. Too obvious and the stowaway works it out. Too vague and you look like the stowaway.</li>
+<li>Everyone votes for who they think the stowaway is.</li>
+<li>If the stowaway is caught, they get one guess at the destination from a list of eight.</li>
+</ol>
+<p class="eyebrow">Scoring</p>
+<ul>
+<li>Stowaway not caught (or a tie for most votes): stowaway <b>+3</b></li>
+<li>Stowaway caught but names the destination: stowaway <b>+2</b></li>
+<li>Stowaway caught and guesses wrong: every passenger <b>+1</b></li>
+</ul>
+<p class="muted small">A round takes about 3 minutes with 5 players. Play until your train pulls in.</p>
+</div></details>`}
+function ticketHTML(isStow,category,word,round){
+  const face=isStow
+    ?`<div class="t-top"><span>Round ${round}</span><span>Car ? · Seat ?</span></div>
+      <span class="stamp">No ticket</span>
+      <p style="font-weight:700;font-size:1.125rem">You're the stowaway.</p>
+      <p><span class="t-lab">Category</span><br><b>${esc(category)}</b></p>
+      <p class="small" style="color:#5a5244">Blend in. Work out the destination from everyone else's clues.</p>`
+    :`<div class="t-top"><span>Admit one · Round ${round}</span><span>${esc(category)}</span></div>
+      <span class="t-lab">Destination</span>
+      <span class="t-word">${esc(word)}</span>
+      <p class="small" style="color:#5a5244">Give clues that prove you know it without giving it away.</p>`;
+  return `<div class="ticket${S.reveal?" open":""}" data-hold tabindex="0" role="button" aria-label="Press and hold to read your ticket">
+    <div class="t-cover"><span class="dot">Hold to read</span><span class="small muted">Shield the screen, then let go to hide it.</span></div>
+    <div class="t-face">${face}</div></div>`;
+}
+
+/* ---------- home ---------- */
+function viewHome(){
+  const room=store("sw.room");
+  return `<section class="board hero">
+    <p class="eyebrow">A platform game for 3 to 8 players</p>
+    <h1 class="dot">Stowaway</h1>
+    <p>Every passenger's ticket shows the same secret destination. One player, the stowaway, has no ticket and only knows the category. Take turns giving one-word clues, then vote out the stowaway before your train arrives.</p>
+  </section>
+  <div class="modes">
+    <button class="mode" data-act="go-online">
+      <span class="k">Car A</span><strong>Everyone on their own phone</strong>
+      <span class="muted">Start a room and share the link. Tickets, clues and votes sync live. No sign-up.</span>
+      ${room?`<span class="chip amber">Back to room ${esc(room)}</span>`:""}
+    </button>
+    <button class="mode" data-act="go-pass">
+      <span class="k">Car B</span><strong>Pass one phone around</strong>
+      <span class="muted">Works offline. Clues and votes happen out loud.</span>
+      ${S.pass.step!=="setup"?`<span class="chip amber">Game in progress · round ${S.pass.round}</span>`:""}
+    </button>
+  </div>
+  ${rulesBlock(false)}`;
+}
+
+/* ---------- online ---------- */
+function nameOf(id){const p=O.players[id];return (p&&p.name)||"Passenger"}
+function isOn(id){return O.online.includes(id)}
+function nm(id){return esc(nameOf(id))+(id===O.uid?" <small>(you)</small>":"")}
+function dotFor(id){return `<span class="on${isOn(id)?"":" off"}" title="${isOn(id)?"Connected":"Not connected"}"></span>`}
+function me(){return O.players[O.uid]||null}
+function seatedIds(){return Object.keys(O.players).filter(id=>O.players[id]&&O.players[id].seated&&O.players[id].name).sort((a,b)=>(O.players[a].joinedAt||0)-(O.players[b].joinedAt||0))}
+function isHost(){return !!(O.game&&O.game.hostId===O.uid)}
+function hostPresent(){const g=O.game;return !!(g&&g.hostId&&seatedIds().includes(g.hostId))}
+function mayRun(){return isHost()||!hostPresent()}
+
+function connNote(){
+  if(O.conn==="waking")return `<p class="note">Waking up the game server. Free hosting naps when nobody's playing, so the first connection can take up to a minute.</p>`;
+  if(O.conn==="closed")return `<p class="note err">Connection lost. Reconnecting on its own…</p>`;
+  return "";
+}
+function viewOnline(){
+  const back=`<button class="btn ghost sm" data-act="home" style="align-self:flex-start">← Back to the concourse</button>`;
+  if(!O.room){
+    return `${back}${connNote()}<div class="board"><p class="eyebrow">Everyone on their own phone</p><h2>Start or join a room</h2>
+      <button class="btn primary block" data-act="create" ${O.conn==="connecting"||O.conn==="waking"?"disabled":""}>${O.conn==="connecting"||O.conn==="waking"?"Connecting…":"Start a new room"}</button>
+      <div class="or">or join one</div>
+      <form class="field" data-form="room">
+        <input type="text" id="room-code" class="code-input" maxlength="4" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="CODE" aria-label="4-letter room code" inputmode="text">
+        <button class="btn ghost" type="submit">Join</button>
+      </form>
+      ${O.joinErr?`<p class="note err">${esc(O.joinErr)}</p>`:""}
+      <p class="muted small">One person starts a room, then shares the link or the 4-letter code with everyone else.</p></div>${rulesBlock(false)}`;
+  }
+  if(!O.haveState)return `${back}${connNote()}<div class="board"><p class="dot" style="font-size:1.25rem">Joining ${esc(O.room)}<span class="blink">_</span></p><p class="muted">Finding your room on the departure board.</p><button class="btn ghost sm" data-act="leave-room" style="align-self:flex-start">Use a different room</button></div>`;
+  const errs=(O.err?`<p class="note err">${esc(O.err)}</p>`:"")+connNote();
+  const m=me();
+  const roomCard=`<div class="board roomcard"><div><p class="eyebrow">Room</p><p class="dot code">${esc(O.room)}</p></div>
+    <div class="btn-row" style="flex:0 1 auto"><button class="btn primary sm" data-act="share">Share link</button><button class="btn ghost sm" data-act="leave-room">Switch room</button></div></div>`;
+  if(!m||!m.seated||!m.name)return back+errs+roomCard+viewJoin(m);
+  const g=O.game;
+  if(!g||g.phase!=="round")return back+errs+roomCard+viewLobby();
+  return errs+viewRound();
+}
+function viewJoin(m){
+  const inRound=O.game&&O.game.phase==="round";
+  return `<div class="board">
+    <p class="eyebrow">Check in</p>
+    <h2>What should we call you?</h2>
+    <form class="field" data-form="join">
+      <input type="text" id="join-name" maxlength="18" autocomplete="nickname" placeholder="Your name" value="${esc(m&&m.name||store("sw.name")||"")}">
+      <button class="btn primary" type="submit">Board</button>
+    </form>
+    ${inRound?`<p class="muted small">A round is underway. You'll be dealt in when the next one starts.</p>`:""}
+  </div>
+  ${lobbyList(false)}
+  ${rulesBlock(false)}`;
+}
+function lobbyList(hostControls){
+  const ids=seatedIds();
+  if(!ids.length)return `<div class="board"><p class="eyebrow">On the platform</p><p class="muted">Nobody yet. Share the link with your group, and everyone taps Board.</p></div>`;
+  const scores=(O.game&&O.game.scores)||{};
+  return `<div class="board"><p class="eyebrow">On the platform · ${ids.length}</p><ul class="rows">${ids.map(id=>`<li class="row"><span class="nm">${dotFor(id)}${nm(id)}${O.game&&O.game.hostId===id?` <small>· conductor</small>`:""}</span>
+    <span class="st">${hostControls&&id!==O.uid?`<button class="btn ghost sm" data-act="unseat" data-id="${esc(id)}">Remove</button>`:`${scores[id]||0} pts`}</span></li>`).join("")}</ul></div>`;
+}
+function viewLobby(){
+  const g=O.game||{};
+  const ids=seatedIds();
+  const amRunning=mayRun();
+  const laps=g.laps||1;
+  const can=ids.length>=3;
+  return `<div class="board">
+    <p class="eyebrow">${g.round?`Between rounds · ${g.round} played`:"Waiting to depart"}</p>
+    <h2>${isHost()&&hostPresent()?"You're the conductor":amRunning?"Anyone can deal the first round":"Waiting for "+esc(nameOf(g.hostId))+" to start"}</h2>
+    ${amRunning&&!(isHost()&&hostPresent())?`<p class="muted small">Whoever deals becomes the conductor and runs the game from their phone.</p>`:""}
+    ${amRunning?`<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><span class="muted">Clue laps</span>
+      <div class="seg" role="group" aria-label="Clue laps"><button data-act="laps" data-n="1" aria-pressed="${laps===1}">1</button><button data-act="laps" data-n="2" aria-pressed="${laps===2}">2</button></div>
+      <span class="muted small">2 laps is harder for the stowaway.</span></div>
+      <button class="btn primary block" data-act="deal" ${can?"":"disabled"}>${can?`Deal tickets to ${ids.length} players`:`Need at least 3 players (${ids.length} here)`}</button>`
+     :`<p class="muted">The conductor deals the tickets. Everyone else just waits here.</p>`}
+  </div>
+  ${lobbyList(amRunning)}
+  <div class="btn-row">
+    ${!amRunning?`<button class="btn ghost" data-act="take-host">Take over as conductor</button>`:""}
+    <button class="btn ghost" data-act="leave">Leave the platform</button>
+    ${amRunning&&g.round?`<button class="btn danger" data-act="reset-scores">Reset scores</button>`:""}
+  </div>
+  ${rulesBlock(!g.round)}`;
+}
+function scoreboard(g,d){
+  const ids=Array.from(new Set((g.lineup||[]).concat(seatedIds())));
+  const sc=g.scores||{};const pts=(d&&d.stage==="result"&&d.points)||{};
+  ids.sort((a,b)=>((sc[b]||0)+(pts[b]||0))-((sc[a]||0)+(pts[a]||0)));
+  return `<div class="board"><p class="eyebrow">Standings</p><ul class="rows">${ids.map(id=>`<li class="row"><span class="nm">${nm(id)}</span><span><span class="score">${(sc[id]||0)+(pts[id]||0)}</span>${pts[id]?`<span class="plus">+${pts[id]}</span>`:""}</span></li>`).join("")}</ul></div>`;
+}
+function clueBoard(g,d){
+  const laps=g.laps||1;
+  const byId={};d.clues.forEach(c=>{(byId[c.id]=byId[c.id]||[])[c.lap]=c.text});
+  return `<div class="board"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><p class="eyebrow">Clues called</p><span class="muted small">${laps} lap${laps>1?"s":""}</span></div>
+  <ol class="rows">${d.live.map(id=>{
+    const now=d.turn&&d.turn.id===id;
+    const done=(byId[id]||[]).filter(Boolean).length;
+    const st=now?`<span class="blink">▶</span> Now`:(done>=laps?"Called":"Waiting");
+    const chips=[];for(let l=0;l<laps;l++){const t=(byId[id]||[])[l];chips.push(`<span class="clue${t?"":" empty"}">${t?esc(t):"····"}</span>`)}
+    return `<li class="row${now?" now":""}"><span class="nm">${dotFor(id)}${nm(id)}</span><span class="st">${st}</span><span class="clues">${chips.join("")}</span></li>`}).join("")}</ol></div>`;
+}
+function viewRound(){
+  const g=O.game;const d=deriveRound(g,O.players);
+  const inIt=d.live.includes(O.uid);
+  const isStow=g.stowawayId===O.uid;
+  const head=`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+    <p class="eyebrow">Room ${esc(O.room)} · Round ${g.round} · Category: <span style="color:var(--fg)">${esc(g.category)}</span></p>
+    ${isHost()?`<span class="chip amber">Conductor</span>`:""}</div>`;
+  let main="";
+  if(d.stage==="void"){
+    main=`<div class="board"><h2>The stowaway left the train</h2><p class="muted">Too few players are left in this round to finish it.</p>${hostOr(`<button class="btn primary block" data-act="deal">Deal a new round</button>`,"The conductor can deal a new round.")}</div>`;
+  }else if(d.stage==="clues"){
+    const myTurn=d.turn.id===O.uid;
+    main=(inIt?ticketHTML(isStow,g.category,g.word,g.round):`<p class="note">You're watching this round. You'll be dealt in next round.</p>`)
+      +(myTurn?`<div class="board" style="border-color:var(--amber-dim)"><p class="eyebrow" style="color:var(--amber)">Your call${(g.laps||1)>1?` · lap ${d.turn.lap+1}`:""}</p>
+        <form class="field" data-form="clue"><input type="text" id="clue-input" maxlength="24" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="One word" enterkeyhint="send"><button class="btn primary" type="submit">Call it</button></form>
+        <p class="muted small">One word only. ${isStow?"Nobody knows you're the stowaway. Keep it vague but believable.":"Don't say the destination itself."}</p></div>`
+       :`<div class="board"><p><span class="muted">Waiting on</span> <b>${esc(nameOf(d.turn.id))}</b> <span class="muted">to call a clue.</span>${isOn(d.turn.id)?"":` <span class="small" style="color:var(--stop)">(not connected)</span>`}</p></div>`)
+      +clueBoard(g,d);
+  }else if(d.stage==="vote"){
+    const m=me();const myVote=inIt&&m&&m.roundKey===g.roundKey?m.vote:null;
+    main=`<div class="board"><p class="eyebrow">Vote</p><h2>${d.tallying?`Counting votes<span class="blink">_</span>`:"Who's the stowaway?"}</h2>
+      ${inIt&&!d.tallying?`<div class="grid">${d.live.filter(id=>id!==O.uid).map(id=>`<button class="pick" data-act="vote" data-id="${esc(id)}" aria-pressed="${myVote===id}">${esc(nameOf(id))}</button>`).join("")}</div>
+      <p class="muted small">${myVote?"Vote cast. You can change it until everyone has voted.":"Talk it over, then tap a name."}</p>`:inIt?"":`<p class="muted">You're watching this round.</p>`}
+      ${d.tallying?"":`<p class="small"><span class="muted">${d.live.length-d.waiting.length} of ${d.live.length} voted. Waiting on:</span> ${d.waiting.map(id=>esc(nameOf(id))).join(", ")}</p>`}</div>`
+      +(inIt?ticketHTML(isStow,g.category,g.word,g.round):"")+clueBoard(g,d);
+  }else if(d.stage==="guess"){
+    const picked=isStow&&d.guess;
+    main=`<div class="board"><p class="eyebrow">Caught</p><h2 class="dot verdict caught" style="font-size:var(--step-3)">${esc(nameOf(g.stowawayId))}</h2>
+      ${isStow?(picked?`<p class="muted">Checking your guess<span class="blink">_</span></p>`:`<p>You were caught. Name the destination to steal 2 points.</p><div class="grid">${(g.options||[]).map(o=>`<button class="pick" data-act="guess" data-w="${esc(o)}">${esc(o)}</button>`).join("")}</div>`)
+        :`<p class="muted">The group caught the stowaway. They get one guess at the destination…</p>`}</div>`+clueBoard(g,d);
+  }else{
+    const vlines=d.live.map(id=>`<dt>${esc(nameOf(id))}</dt><dd>→ ${esc(nameOf(d.votes[id]))}</dd>`).join("");
+    main=`<div class="board"><p class="eyebrow">Round ${g.round} result</p>
+      <h2 class="dot verdict ${d.caught?"caught":"escaped"}">${d.caught?(d.guessedRight?"Caught, but…":"Caught"):"Escaped"}</h2>
+      <dl class="kv"><dt>Stowaway</dt><dd>${nm(g.stowawayId)}</dd><dt>Destination</dt><dd>${esc(g.word)}</dd>
+      ${d.caught?`<dt>Their guess</dt><dd>${esc(d.guess)} ${d.guessedRight?`<span style="color:var(--stop)">(right, +2 to the stowaway)</span>`:`<span style="color:var(--go)">(wrong, +1 to every passenger)</span>`}</dd>`
+        :`<dt>Why</dt><dd>${d.accused?`The group voted out ${esc(nameOf(d.accused))}, an honest passenger.`:"The vote was tied, so the stowaway slipped through."} +3 to the stowaway.</dd>`}</dl>
+      <p class="eyebrow">Votes</p><dl class="kv">${vlines}</dl>
+      ${hostOr(`<div class="btn-row"><button class="btn primary" data-act="deal">Next round</button><button class="btn ghost" data-act="lobby">Back to the platform</button></div>`,`Waiting for ${esc(nameOf(g.hostId))} to deal the next round.`)}
+    </div>`+clueBoard(g,d)+scoreboard(g,d);
+  }
+  if(d.stage!=="result")main+=scoreboard(g,null);
+  return head+main+hostTools(g,d)+rulesBlock(false);
+}
+function hostOr(html,msg){return mayRun()?html:`<p class="muted">${msg}</p>`}
+function hostTools(g,d){
+  if(!mayRun())return `<details><summary>Trouble?</summary><div class="inner">
+    <p class="muted small">If the conductor's phone died or they wandered off, take over and keep the game moving.</p>
+    <div class="btn-row"><button class="btn ghost" data-act="take-host">Take over as conductor</button><button class="btn ghost" data-act="leave">Leave the platform</button></div></div></details>`;
+  const skip=d.live.filter(id=>id!==O.uid);
+  return `<details><summary>Conductor tools</summary><div class="inner">
+    <p class="muted small">Someone stopped responding? Skip them so the round can carry on. Skipping the stowaway ends the round.</p>
+    ${skip.length?`<div class="grid">${skip.map(id=>`<button class="pick" data-act="skip" data-id="${esc(id)}">${dotFor(id)}Skip ${esc(nameOf(id))}</button>`).join("")}</div>`:""}
+    <div class="btn-row"><button class="btn ghost" data-act="lobby">End round, back to platform</button><button class="btn ghost" data-act="deal">Re-deal this round</button></div></div></details>`;
+}
+
+/* ---------- online writes ---------- */
+/* Each write carries a rising rev. Until the server echoes this rev back, keep showing (and building on)
+   our own latest copy, so a slow echo of an older write can't undo a newer one. */
+let lastRev=0;
+function writeMe(patch){
+  lastRev=Math.max(Date.now(),lastRev+1);
+  const next=Object.assign({},me()||{},patch,{rev:lastRev});
+  O.mine=next;
+  O.players=Object.assign({},O.players,{[O.uid]:next});O.err="";
+  send({t:"me",data:next});render();
+}
+function roundFields(){const m=me()||{};const g=O.game||{};return m.roundKey===g.roundKey?{clues:(m.clues||[]).slice(),vote:m.vote||null,guess:m.guess||null}:{clues:[],vote:null,guess:null}}
+
+/* ---------- pass-one-phone mode ---------- */
+function P(){return S.pass}
+function pName(i){return P().names[i]||"Player"}
+function viewPass(){
+  const p=P();const back=`<button class="btn ghost sm" data-act="home" style="align-self:flex-start">← Back to the concourse</button>`;
+  if(p.step==="setup"){
+    return `${back}<div class="board"><p class="eyebrow">Pass one phone around</p><h2>Who's playing?</h2>
+      <form class="field" data-form="pass-add"><input type="text" id="pass-name" maxlength="18" placeholder="Add a name" autocomplete="off"><button class="btn primary" type="submit">Add</button></form>
+      ${p.names.length?`<ul class="rows">${p.names.map((n,i)=>`<li class="row"><span class="nm">${esc(n)}</span><span class="st"><span class="score" style="font-size:1rem">${p.scores[i]||0}</span> <button class="btn ghost sm" data-act="pass-remove" data-i="${i}" aria-label="Remove ${esc(n)}">Remove</button></span></li>`).join("")}</ul>`:`<p class="muted">Add 3 to 8 names. Scores carry over between rounds.</p>`}
+      <button class="btn primary block" data-act="pass-start" ${p.names.length>=3?"":"disabled"}>${p.names.length>=3?`Deal tickets to ${p.names.length} players`:"Need at least 3 players"}</button>
+      ${p.round?`<button class="btn danger sm" data-act="pass-reset" style="align-self:flex-start">Reset scores</button>`:""}
+    </div>${rulesBlock(!p.round)}`;
+  }
+  const dl=p.deal;const order=dl.lineup.map(Number);
+  if(p.step==="deal"){
+    const i=order[p.idx];const isStow=String(i)===dl.stowawayId;
+    const head=`<p class="eyebrow">Round ${dl.round} · Dealing ticket ${p.idx+1} of ${order.length}</p>`;
+    if(!p.shown)return `${head}<div class="board" style="text-align:center;align-items:center;padding-block:36px"><p class="muted">Hand the phone to</p><h2 class="dot" style="font-size:var(--step-3)">${esc(pName(i))}</h2>
+      <button class="btn primary" data-act="pass-show">I'm ${esc(pName(i))}, show my ticket</button></div>`;
+    return `${head}${ticketHTML(isStow,dl.category,dl.word,dl.round)}
+      <button class="btn primary block" data-act="pass-next">${p.idx+1<order.length?`Got it. Hide and pass to ${esc(pName(order[p.idx+1]))}`:"Got it. Hide and start clues"}</button>`;
+  }
+  if(p.step==="talk"){
+    const left=p.timerEnd?Math.max(0,Math.round((p.timerEnd-Date.now())/1000)):null;
+    return `<p class="eyebrow">Round ${dl.round} · Category: <span style="color:var(--fg)">${esc(dl.category)}</span></p>
+    <div class="board"><h2>Say your clues out loud</h2><p class="muted">One word each, in this order. Go around twice if you like.</p><ol class="order">${order.map(i=>`<li>${esc(pName(i))}</li>`).join("")}</ol></div>
+    <div class="board"><p class="eyebrow">Discussion timer</p>
+      ${left!=null?`<p class="big-timer" id="pass-timer">${Math.floor(left/60)}:${String(left%60).padStart(2,"0")}</p>`:""}
+      <div class="btn-row"><button class="btn ghost" data-act="pass-timer" data-s="60">1 min</button><button class="btn ghost" data-act="pass-timer" data-s="120">2 min</button>${left!=null?`<button class="btn ghost" data-act="pass-timer" data-s="0">Stop</button>`:""}</div></div>
+    <button class="btn primary block" data-act="pass-tovote">Everyone's voted. Enter the result</button>`;
+  }
+  if(p.step==="accuse"){
+    return `<p class="eyebrow">Round ${dl.round} · Vote</p><div class="board"><h2>Who got the most votes?</h2><p class="muted">On three, everyone points at their suspect.</p>
+      <div class="grid">${order.map(i=>`<button class="pick" data-act="pass-accuse" data-i="${i}">${esc(pName(i))}</button>`).join("")}</div>
+      <button class="btn ghost" data-act="pass-accuse" data-i="-1">It was a tie</button></div>`;
+  }
+  if(p.step==="guess"){
+    const s=Number(dl.stowawayId);
+    return `<p class="eyebrow">Round ${dl.round} · Caught</p><div class="board"><h2 class="dot verdict caught" style="font-size:var(--step-3)">${esc(pName(s))}</h2>
+      <p>${esc(pName(s))} was the stowaway. Hand them the phone: pick the destination to steal 2 points.</p>
+      <div class="grid">${dl.options.map(o=>`<button class="pick" data-act="pass-guess" data-w="${esc(o)}">${esc(o)}</button>`).join("")}</div></div>`;
+  }
+  if(p.step==="reveal-wrong"){
+    const a=p.accused;
+    return `<p class="eyebrow">Round ${dl.round}</p><div class="board"><h2>${a>=0?`${esc(pName(a))} was an honest passenger`:"A tie lets the stowaway slip by"}</h2>
+      <p class="muted">Ready to see who the stowaway really was?</p><button class="btn primary block" data-act="pass-result">Reveal the stowaway</button></div>`;
+  }
+  const s=Number(dl.stowawayId);const caught=p.accused===s;const right=caught&&norm(p.guess)===norm(dl.word);
+  const pts=p.lastPoints||{};
+  const ids=p.names.map((_,i)=>i).sort((a,b)=>(p.scores[b]||0)-(p.scores[a]||0));
+  return `<div class="board"><p class="eyebrow">Round ${dl.round} result</p>
+    <h2 class="dot verdict ${caught?"caught":"escaped"}">${caught?(right?"Caught, but…":"Caught"):"Escaped"}</h2>
+    <dl class="kv"><dt>Stowaway</dt><dd>${esc(pName(s))}</dd><dt>Destination</dt><dd>${esc(dl.word)}</dd>
+    ${caught?`<dt>Their guess</dt><dd>${esc(p.guess)} ${right?`<span style="color:var(--stop)">(right, +2 to the stowaway)</span>`:`<span style="color:var(--go)">(wrong, +1 to every passenger)</span>`}</dd>`:`<dt>Points</dt><dd>+3 to the stowaway</dd>`}</dl>
+    <div class="btn-row"><button class="btn primary" data-act="pass-start">Next round</button><button class="btn ghost" data-act="pass-setup">Change players</button></div></div>
+  <div class="board"><p class="eyebrow">Standings</p><ul class="rows">${ids.map(i=>`<li class="row"><span class="nm">${esc(pName(i))}</span><span><span class="score">${p.scores[i]||0}</span>${pts[i]?`<span class="plus">+${pts[i]}</span>`:""}</span></li>`).join("")}</ul></div>`;
+}
+function passFinish(){
+  const p=P();const dl=p.deal;const s=Number(dl.stowawayId);const caught=p.accused===s;const right=caught&&norm(p.guess)===norm(dl.word);
+  const pts=scoreRound(dl.lineup,dl.stowawayId,caught,right);
+  Object.keys(pts).forEach(k=>p.scores[k]=(p.scores[k]||0)+pts[k]);
+  p.lastPoints=pts;p.step="result";p.timerEnd=null;savePass();render();
+}
+
+/* ---------- events ---------- */
+function armThenDo(t,label,fn){if(t.dataset.armed){fn()}else{t.dataset.armed="1";t.textContent="Tap again to reset";setTimeout(()=>{if(t.isConnected){delete t.dataset.armed;t.textContent=label}},3000)}}
+document.addEventListener("click",async e=>{
+  const t=e.target.closest("[data-act]");if(!t||t.disabled)return;
+  const a=t.dataset.act;const p=P();
+  switch(a){
+    case "home":go("home");break;
+    case "go-online":{const r=store("sw.room");go("online");if(r&&!O.room)joinRoom(r);break}
+    case "go-pass":go("pass");break;
+    case "train":{const f=$("#train-pop");f.hidden=!f.hidden;if(!f.hidden){$("#train-time").value=store("sw.train")||"";$("#train-time").focus()}break}
+    case "train-clear":store("sw.train",null);$("#train-pop").hidden=true;tick();break;
+    /* online */
+    case "create":O.joinErr="";send({t:"create"});break;
+    case "leave-room":leaveRoom();break;
+    case "share":{
+      const url=location.origin+location.pathname+"#"+O.room;
+      if(navigator.share){try{await navigator.share({title:"Stowaway",text:"Join my Stowaway game. Room "+O.room,url});break}catch(err){if(err&&err.name==="AbortError")break}}
+      try{await navigator.clipboard.writeText(url);toast("Link copied: "+url)}catch(err){toast("Share this link: "+url)}
+      break}
+    case "laps":send({t:"laps",n:Number(t.dataset.n)});break;
+    case "deal":send({t:"deal"});break;
+    case "lobby":send({t:"lobby"});break;
+    case "take-host":send({t:"takeHost"});break;
+    case "leave":writeMe({seated:false});break;
+    case "unseat":send({t:"unseat",id:t.dataset.id});break;
+    case "reset-scores":armThenDo(t,"Reset scores",()=>send({t:"resetScores"}));break;
+    case "skip":send({t:"skip",id:t.dataset.id});break;
+    case "vote":{const r=roundFields();writeMe(Object.assign(r,{roundKey:O.game.roundKey,vote:t.dataset.id}));break}
+    case "guess":{const r=roundFields();if(r.guess)break;writeMe(Object.assign(r,{roundKey:O.game.roundKey,guess:t.dataset.w}));break}
+    /* pass */
+    case "pass-remove":{const i=Number(t.dataset.i);p.names.splice(i,1);const sc={};Object.keys(p.scores).forEach(k=>{const n=Number(k);if(n<i)sc[n]=p.scores[k];else if(n>i)sc[n-1]=p.scores[k]});p.scores=sc;savePass();render();break}
+    case "pass-reset":armThenDo(t,"Reset scores",()=>{p.scores={};p.round=0;savePass();render()});break;
+    case "pass-start":{if(p.names.length<3)break;const ids=p.names.map((_,i)=>String(i));const dl=dealRound({used:p.used,lastStowaway:p.lastStowaway,round:p.round},ids);
+      p.deal=dl;p.used=dl.used;p.lastStowaway=dl.stowawayId;p.round=dl.round;p.step="deal";p.idx=0;p.shown=false;p.accused=null;p.guess=null;p.lastPoints=null;p.timerEnd=null;S.reveal=false;savePass();render();window.scrollTo(0,0);break}
+    case "pass-show":p.shown=true;S.reveal=false;savePass();render();break;
+    case "pass-next":S.reveal=false;p.shown=false;p.idx++;if(p.idx>=p.deal.lineup.length)p.step="talk";savePass();render();window.scrollTo(0,0);break;
+    case "pass-timer":{const s=Number(t.dataset.s);p.timerEnd=s?Date.now()+s*1000:null;savePass();render();break}
+    case "pass-tovote":p.step="accuse";p.timerEnd=null;savePass();render();break;
+    case "pass-accuse":{const i=Number(t.dataset.i);p.accused=i;p.step=String(i)===p.deal.stowawayId?"guess":"reveal-wrong";savePass();render();break}
+    case "pass-result":passFinish();break;
+    case "pass-guess":p.guess=t.dataset.w;passFinish();break;
+    case "pass-setup":p.step="setup";savePass();render();break;
+  }
+});
+document.addEventListener("submit",e=>{
+  e.preventDefault();
+  const f=e.target;
+  if(f.id==="train-pop"){const v=$("#train-time").value;store("sw.train",v||null);f.hidden=true;tick();return}
+  const k=f.dataset.form;
+  if(k==="room"){const inp=$("#room-code");const c=inp.value.trim().toUpperCase();if(!/^[A-Z]{4}$/.test(c)){O.joinErr="Room codes are 4 letters.";render();return}inp.value="";joinRoom(c)}
+  if(k==="join"){const n=oneWord($("#join-name").value).slice(0,18);if(!n){$("#join-name").focus();return}store("sw.name",n);const m=me();writeMe({name:n,seated:true,joinedAt:(m&&m.joinedAt)||Date.now()})}
+  if(k==="clue"){
+    const inp=$("#clue-input");const v=oneWord(inp.value);
+    const g=O.game;const d=deriveRound(g,O.players);
+    if(!v)return inp.focus();
+    if(v.includes(" ")){O.err="One word only, so no spaces.";render();return}
+    if(g.word&&norm(v)===norm(g.word)){O.err="That's the destination itself. Pick a different word.";render();return}
+    if(!d.turn||d.turn.id!==O.uid)return;
+    const r=roundFields();r.clues[d.turn.lap]=v;
+    inp.value="";writeMe(Object.assign(r,{roundKey:g.roundKey}));
+  }
+  if(k==="pass-add"){const inp=$("#pass-name");const n=oneWord(inp.value).slice(0,18);if(!n)return;if(P().names.length>=8){inp.value="";return}P().names.push(n);inp.value="";savePass();render();$("#pass-name").focus()}
+});
+/* hold-to-reveal */
+function setReveal(on){S.reveal=on;document.querySelectorAll(".ticket").forEach(t=>t.classList.toggle("open",on))}
+document.addEventListener("pointerdown",e=>{if(e.target.closest("[data-hold]"))setReveal(true);keepAwake()});
+["pointerup","pointercancel"].forEach(ev=>document.addEventListener(ev,()=>{if(S.reveal)setReveal(false)}));
+document.addEventListener("contextmenu",e=>{if(e.target.closest("[data-hold]"))e.preventDefault()});
+document.addEventListener("keydown",e=>{if((e.key===" "||e.key==="Enter")&&e.target.matches&&e.target.matches("[data-hold]")){e.preventDefault();setReveal(true)}});
+document.addEventListener("keyup",e=>{if((e.key===" "||e.key==="Enter")&&e.target.matches&&e.target.matches("[data-hold]"))setReveal(false)});
+window.addEventListener("blur",()=>{if(S.reveal)setReveal(false)});
+
+/* keep the screen on, and reconnect fast when the phone wakes */
+let wake=null;
+async function keepAwake(){try{if(!wake&&navigator.wakeLock&&document.visibilityState==="visible"){wake=await navigator.wakeLock.request("screen");wake.addEventListener("release",()=>{wake=null})}}catch(e){}}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"){keepAwake();if(O.room&&(!O.ws||O.ws.readyState>1)){O.retry=0;connect()}}});
+window.addEventListener("hashchange",()=>{const c=roomFromHash();if(c&&c!==O.room)joinRoom(c)});
+
+/* header clock and train countdown */
+function tick(){
+  const now=new Date();const hh=String(now.getHours()).padStart(2,"0"),mm=String(now.getMinutes()).padStart(2,"0");
+  const tr=store("sw.train");const T=$("#clock-t"),Sx=$("#clock-s");
+  if(tr&&/^\d\d:\d\d$/.test(tr)){
+    const [h,m]=tr.split(":").map(Number);const dep=new Date(now);dep.setHours(h,m,0,0);
+    let diff=Math.round((dep-now)/60000);if(diff<-720)diff+=1440;
+    T.textContent=tr;
+    Sx.textContent=diff>1?`Train in ${diff} min`:diff>=0?"Train due":"Departed";
+    Sx.style.color=diff<=3?"var(--amber)":"";
+  }else{T.textContent=hh+":"+mm;Sx.textContent="Set train time";Sx.style.color=""}
+  if(S.view==="pass"&&P().step==="talk"&&P().timerEnd){const el=$("#pass-timer");if(el){const left=Math.max(0,Math.round((P().timerEnd-Date.now())/1000));el.textContent=Math.floor(left/60)+":"+String(left%60).padStart(2,"0");if(left===0)el.style.color="var(--stop)"}}
+}
+setInterval(tick,1000);tick();
+
+/* boot: a shared link (#CODE) drops you straight into that room */
+(function boot(){
+  const fromLink=roomFromHash();
+  const v=store("sw.view");
+  if(fromLink){S.view="online";store("sw.view","online");joinRoom(fromLink);return}
+  if(v==="pass")S.view="pass";
+  else if(v==="online"){S.view="online";const r=store("sw.room");if(r)joinRoom(r);else connect()}
+  render();
+})();
+</script>
+</body>
+</html>

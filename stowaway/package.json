@@ -1,0 +1,17 @@
+{
+  "name": "stowaway",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Stowaway: a no-login party game for 3 to 8 people waiting for a train.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test/play-round.test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}

@@ -80,6 +80,8 @@ async function until(fn, label) {
       else { assert(g.word, "passengers receive the word"); assert.strictEqual(g.stowawayId, E.HIDDEN, "passengers do not learn who the stowaway is"); }
     }
     const word = views.find(g => g.word).word;
+    /* Check reveals on a passenger's phone: the stowaway's own phone always knows who the stowaway is. */
+    const watcher = phones.find(p => p !== stow);
     const roundKey = host.state.game.roundKey;
     const lineup = host.state.game.lineup;
     assert.notStrictEqual(lineup[0], stow.pid, "stowaway never speaks first");
@@ -97,13 +99,13 @@ async function until(fn, label) {
     if (round === 1) {
       /* everyone fingers the stowaway; the stowaway guesses wrong */
       for (const p of phones) p.write({ vote: p === stow ? lineup.find(id => id !== stow.pid) : stow.pid });
-      await until(() => host.state.game.stowawayId === stow.pid, "stowaway revealed after votes");
+      await until(() => watcher.state.game.stowawayId === stow.pid, "stowaway revealed after votes");
       assert.strictEqual(stow.state.game.word, null, "stowaway still lacks the word while guessing");
       const wrong = stow.state.game.options.find(o => o !== word);
       assert(stow.state.game.options.includes(word), "the right answer is among the options");
       stow.write({ guess: wrong });
-      await until(() => stow.state.game.word === word, "word revealed to stowaway at result");
-      const d = E.deriveRound(host.state.game, host.state.players);
+      await until(() => stow.state.game.word === word && watcher.state.players[stow.pid].guess, "word revealed to stowaway at result");
+      const d = E.deriveRound(watcher.state.game, watcher.state.players);
       assert.strictEqual(d.stage, "result"); assert.strictEqual(d.caught, true); assert.strictEqual(d.guessedRight, false);
       phones.filter(p => p !== stow).forEach(p => assert.strictEqual(d.points[p.pid], 1));
       host.send({ t: "deal" });
@@ -117,8 +119,8 @@ async function until(fn, label) {
       const prior = host.state.game.scores[stow.pid] || 0;
       const [a, b] = lineup.filter(id => id !== stow.pid);
       for (const p of phones) p.write({ vote: p.pid === a ? b : a });
-      await until(() => host.state.game.stowawayId === stow.pid, "revealed after tie");
-      const d = E.deriveRound(host.state.game, host.state.players);
+      await until(() => watcher.state.game.stowawayId === stow.pid, "revealed after tie");
+      const d = E.deriveRound(watcher.state.game, watcher.state.players);
       assert.strictEqual(d.stage, "result"); assert.strictEqual(d.caught, false); assert.strictEqual(d.points[stow.pid], 3);
       host.send({ t: "lobby" });
       await until(() => host.state.game.phase === "lobby", "back to lobby");

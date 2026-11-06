@@ -4,9 +4,9 @@ A no-login party game for 3 to 8 people waiting for a train. Every passenger's t
 destination. One player, the stowaway, has no ticket and only knows the category. Players give one-word clues,
 then vote out the stowaway.
 
-- **Car A, everyone on their own phone:** one person starts a room and shares the link (or the 4-letter code).
-  No accounts, no app install.
-- **Car B, pass one phone around:** works offline on a single phone.
+Everyone plays on their own phone, synced live. One person taps **Start a new room** and shares the link
+(or the 4-letter code), and everyone else opens it. No accounts, no app install. A small "No signal?" link at the
+bottom of the home screen offers a pass-one-phone mode that works offline.
 
 This folder is self-contained and separate from the CrewOps app. Vercel only builds the repo's root
 `index.html`, so nothing here affects the CrewOps deploy.

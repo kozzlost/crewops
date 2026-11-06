@@ -227,7 +227,7 @@ function connect(){
   O.ws=ws;
   ws.onopen=()=>{O.conn="open";O.retry=0;clearTimeout(O.wakeT);if(O.room)ws.send(JSON.stringify({t:"hello",room:O.room,pid:O.uid}));const q=O.queue;O.queue=[];q.forEach(m=>ws.send(JSON.stringify(m)));render()};
   ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(x){return}onMsg(m)};
-  ws.onclose=()=>{if(O.ws!==ws)return;O.ws=null;O.conn="closed";render();const d=Math.min(15000,1000*Math.pow(2,O.retry++));setTimeout(()=>{if(S.view==="online"||O.room)connect()},d)};
+  ws.onclose=()=>{if(O.ws!==ws)return;O.ws=null;O.conn="closed";render();const d=Math.min(15000,1000*Math.pow(2,O.retry++));setTimeout(()=>{if(S.view!=="pass"||O.room)connect()},d)};
 }
 function send(m){if(O.ws&&O.ws.readyState===1)O.ws.send(JSON.stringify(m));else{O.queue.push(m);connect()}}
 function onMsg(m){
@@ -285,26 +285,31 @@ function ticketHTML(isStow,category,word,round){
 }
 
 /* ---------- home ---------- */
+/* The home screen is the room picker: multiplayer on everyone's own phone is the game. */
 function viewHome(){
-  const room=store("sw.room");
+  const last=store("sw.room");
+  const busy=O.conn==="connecting"||O.conn==="waking";
   return `<section class="board hero">
-    <p class="eyebrow">A platform game for 3 to 8 players</p>
+    <p class="eyebrow">3 to 8 players · each on their own phone</p>
     <h1 class="dot">Stowaway</h1>
-    <p>Every passenger's ticket shows the same secret destination. One player, the stowaway, has no ticket and only knows the category. Take turns giving one-word clues, then vote out the stowaway before your train arrives.</p>
+    <p>Every passenger's ticket shows the same secret destination. One player, the stowaway, has no ticket and only knows the category. Give one-word clues from your own phone, then vote out the stowaway before your train arrives.</p>
   </section>
-  <div class="modes">
-    <button class="mode" data-act="go-online">
-      <span class="k">Car A</span><strong>Everyone on their own phone</strong>
-      <span class="muted">Start a room and share the link. Tickets, clues and votes sync live. No sign-up.</span>
-      ${room?`<span class="chip amber">Back to room ${esc(room)}</span>`:""}
-    </button>
-    <button class="mode" data-act="go-pass">
-      <span class="k">Car B</span><strong>Pass one phone around</strong>
-      <span class="muted">Works offline. Clues and votes happen out loud.</span>
-      ${S.pass.step!=="setup"?`<span class="chip amber">Game in progress · round ${S.pass.round}</span>`:""}
-    </button>
+  ${connNote()}
+  <div class="board">
+    <p class="eyebrow">Play together</p>
+    <h2>Start or join a room</h2>
+    <button class="btn primary block" data-act="create" ${busy?"disabled":""}>${busy?"Connecting…":"Start a new room"}</button>
+    ${last?`<button class="btn ghost block" data-act="rejoin">Rejoin room ${esc(last)}</button>`:""}
+    <div class="or">or join a friend's room</div>
+    <form class="field" data-form="room">
+      <input type="text" id="room-code" class="code-input" maxlength="4" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="CODE" aria-label="4-letter room code">
+      <button class="btn ghost" type="submit">Join</button>
+    </form>
+    ${O.joinErr?`<p class="note err">${esc(O.joinErr)}</p>`:""}
+    <p class="muted small">One person starts a room and taps Share link. Everyone else opens the link on their own phone. No app, no sign-up.</p>
   </div>
-  ${rulesBlock(false)}`;
+  ${rulesBlock(false)}
+  <p class="small muted" style="text-align:center">No signal? <button class="btn ghost sm" data-act="go-pass" style="margin-left:6px">Pass one phone around instead</button>${S.pass.step!=="setup"?` <span class="chip amber" style="margin-left:6px">Round ${S.pass.round} in progress</span>`:""}</p>`;
 }
 
 /* ---------- online ---------- */
@@ -325,17 +330,7 @@ function connNote(){
 }
 function viewOnline(){
   const back=`<button class="btn ghost sm" data-act="home" style="align-self:flex-start">← Back to the concourse</button>`;
-  if(!O.room){
-    return `${back}${connNote()}<div class="board"><p class="eyebrow">Everyone on their own phone</p><h2>Start or join a room</h2>
-      <button class="btn primary block" data-act="create" ${O.conn==="connecting"||O.conn==="waking"?"disabled":""}>${O.conn==="connecting"||O.conn==="waking"?"Connecting…":"Start a new room"}</button>
-      <div class="or">or join one</div>
-      <form class="field" data-form="room">
-        <input type="text" id="room-code" class="code-input" maxlength="4" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="CODE" aria-label="4-letter room code" inputmode="text">
-        <button class="btn ghost" type="submit">Join</button>
-      </form>
-      ${O.joinErr?`<p class="note err">${esc(O.joinErr)}</p>`:""}
-      <p class="muted small">One person starts a room, then shares the link or the 4-letter code with everyone else.</p></div>${rulesBlock(false)}`;
-  }
+  if(!O.room)return viewHome();
   if(!O.haveState)return `${back}${connNote()}<div class="board"><p class="dot" style="font-size:1.25rem">Joining ${esc(O.room)}<span class="blink">_</span></p><p class="muted">Finding your room on the departure board.</p><button class="btn ghost sm" data-act="leave-room" style="align-self:flex-start">Use a different room</button></div>`;
   const errs=(O.err?`<p class="note err">${esc(O.err)}</p>`:"")+connNote();
   const m=me();
@@ -549,6 +544,7 @@ document.addEventListener("click",async e=>{
   switch(a){
     case "home":go("home");break;
     case "go-online":{const r=store("sw.room");go("online");if(r&&!O.room)joinRoom(r);break}
+    case "rejoin":{const r=store("sw.room");if(r)joinRoom(r);break}
     case "go-pass":go("pass");break;
     case "train":{const f=$("#train-pop");f.hidden=!f.hidden;if(!f.hidden){$("#train-time").value=store("sw.train")||"";$("#train-time").focus()}break}
     case "train-clear":store("sw.train",null);$("#train-pop").hidden=true;tick();break;
@@ -640,7 +636,9 @@ setInterval(tick,1000);tick();
   const v=store("sw.view");
   if(fromLink){S.view="online";store("sw.view","online");joinRoom(fromLink);return}
   if(v==="pass")S.view="pass";
-  else if(v==="online"){S.view="online";const r=store("sw.room");if(r)joinRoom(r);else connect()}
+  else if(v==="online"){const r=store("sw.room");if(r){S.view="online";joinRoom(r);return}}
+  /* Connect straight away so a napping free server starts waking before anyone taps a button. */
+  connect();
   render();
 })();
 </script>
